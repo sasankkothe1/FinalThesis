@@ -1,10 +1,9 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 import logo from "../../Assests/logo.png";
 import "./header.css";
 
 export default function Header() {
-  console.log(logo);
-
   return (
     <header className="header">
       <div className="header-container">
@@ -14,10 +13,38 @@ export default function Header() {
           </a>
         </div>
         <div className="header-nav">
-          <button className="header-nav-buttons">About</button>
-          <button className="header-nav-buttons">Problem Sets</button>
-          <button className="header-nav-buttons">How to</button>
-          <button className="header-nav-buttons">Upload Solutions</button>
+          <NavLink
+            exact
+            className="header-nav-buttons"
+            activeClassName="active-button"
+            to={"/"}
+          >
+            About
+          </NavLink>
+          <NavLink
+            exact
+            className="header-nav-buttons"
+            activeClassName="active-button"
+            to={"/ProblemSets"}
+          >
+            Problem Sets
+          </NavLink>
+          <NavLink
+            exact
+            className="header-nav-buttons"
+            activeClassName="active-button"
+            to={"/HowTo"}
+          >
+            How to
+          </NavLink>
+          <NavLink
+            exact
+            className="upload-solution"
+            activeClassName="active-upload-solution"
+            to={"/UploadSolutions"}
+          >
+            Upload Solutions
+          </NavLink>
         </div>
       </div>
     </header>

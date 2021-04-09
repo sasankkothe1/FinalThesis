@@ -24,11 +24,32 @@
 }
 
 .header-nav-buttons {
-  padding: 5px;
+  padding: 5px 10px 5px 10px;
   margin-left: 30px;
   border: none;
   border-radius: 20px;
-  background: #c4c4c4;
   color: #3070b3;
   font-weight: bold;
+  text-decoration: none;
+}
+
+.active-button {
+  background: #c4c4c4;
+}
+
+.upload-solution {
+  padding: 5px 10px 5px 10px;
+  margin-left: 30px;
+  border: none;
+  border-radius: 20px;
+  background: #62a7ef;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.active-upload-solution {
+  background: white;
+  color: #62a7ef;
+  box-shadow: 0 4px 4px grey;
 }

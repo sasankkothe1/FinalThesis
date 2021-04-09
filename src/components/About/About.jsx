@@ -46,10 +46,6 @@ export default function About() {
           Mauris viverra, felis vitae efficitur volutpat, justo justo
           pellentesque ante
         </li>
-        <li className="research-list-item">
-          at vestibulum sem urna tincidunt erat. Nam imperdiet, ligula eu
-          fermentum gravida
-        </li>
       </ul>
     </div>
   );
