@@ -1,0 +1,34 @@
+.header {
+  width: -webkit-fill-available;
+  background-color: #f6f6f6;
+}
+
+.header-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.header .header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.header-logo {
+  padding: 20px;
+}
+
+.logo-image {
+  height: 40px;
+}
+
+.header-nav-buttons {
+  padding: 5px;
+  margin-left: 30px;
+  border: none;
+  border-radius: 20px;
+  background: #c4c4c4;
+  color: #3070b3;
+  font-weight: bold;
+}
