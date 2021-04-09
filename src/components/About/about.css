@@ -1,0 +1,18 @@
+.about {
+  margin: 50px;
+  flex-grow: 1;
+}
+
+.about-paragraph {
+  text-align: justify;
+  font-size: x-small;
+}
+
+.about-containter {
+  overflow-x: scroll;
+}
+
+.research-list-item {
+  text-align: justify;
+  font-size: x-small;
+}
