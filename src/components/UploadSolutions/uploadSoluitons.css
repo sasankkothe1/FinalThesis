@@ -1,0 +1,76 @@
+.form-heading {
+  font-size: medium;
+  font-weight: 900;
+}
+
+.form-inner-headings {
+  font-size: small;
+  font-weight: bold;
+  text-align: center;
+}
+
+.uploadSolutions-form-container {
+  padding-top: 10px;
+}
+
+.form-inner-row {
+  max-width: 100%;
+  margin: 0 20% 0 20%;
+}
+
+.submit-button {
+  justify-content: center;
+}
+
+.flags {
+  color: black !important;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+input#firstname,
+input#lastname,
+input#titleOfPaper,
+input#doi,
+input#contributors,
+input#solutions {
+  border-radius: 35px;
+  background-color: #e5e5e5;
+  border: none;
+}
+
+input#firstname::placeholder {
+  font-size: x-small;
+  font-weight: bolder;
+  color: black;
+}
+
+input#lastname::placeholder {
+  font-size: x-small;
+  font-weight: bolder;
+  color: black;
+}
+
+input#titleOfPaper::placeholder {
+  font-size: x-small;
+  font-weight: bolder;
+  color: black;
+}
+
+input#doi::placeholder {
+  font-size: x-small;
+  font-weight: bolder;
+  color: black;
+}
+
+input#contributors::placeholder {
+  font-size: x-small;
+  font-weight: bolder;
+  color: black;
+}
+
+input#solutions::placeholder {
+  font-size: x-small;
+  font-weight: bolder;
+  color: black;
+}
