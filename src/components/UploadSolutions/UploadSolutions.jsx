@@ -7,7 +7,7 @@ import "./uploadSoluitons.css";
 export default function UploadSolutions() {
   const { register, handleSubmit, control } = useForm();
   const onSubmit = (data) => console.log(data);
-  const [files, serFiles] = useState();
+  const [files, setFiles] = useState();
 
   return (
     <div className="uploadSolutions-container">

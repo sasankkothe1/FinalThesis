@@ -1,9 +1,72 @@
 import React from "react";
+import { Accordion, Button, Card } from "react-bootstrap";
 
 export default function HowTo() {
   return (
-    <div>
-      <h1>This is how to</h1>
+    <div className="howTo-container">
+      <Accordion defaultActiveKey="0">
+        <Card>
+          <Card.Header>
+            <Accordion.Toggle as={Button} variant="link" eventKey="0">
+              Find the problem sets
+            </Accordion.Toggle>
+          </Card.Header>
+          <Accordion.Collapse eventKey="0">
+            <Card.Body>
+              <ul>
+                <li>Click on "problem sets" options in the navigation bar</li>
+                <li>
+                  Click on the desired problem set. You will be redirected to a
+                  new page with list of problem sets
+                </li>
+                <li>
+                  Please note that
+                  <ul>
+                    <li>
+                      You may download data sets (*.sm.tgz), optimal (*opt.sm)
+                      or heuristic (*hrs.sm) solutions and, in the case that no
+                      optimal solutions are known, a file with lower and upper
+                      bounds for Single Mode problems (*lb.sm).
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </Card.Body>
+          </Accordion.Collapse>
+        </Card>
+        <Card>
+          <Card.Header>
+            <Accordion.Toggle as={Button} variant="link" eventKey="1">
+              Upload the solution
+            </Accordion.Toggle>
+          </Card.Header>
+          <Accordion.Collapse eventKey="1">
+            <Card.Body>
+              <ul>
+                <li>
+                  Click on "Upload Solutions" button in the navigation bar
+                </li>
+                <li>
+                  Fill in the form.
+                  <ul>
+                    <li>Make sure</li>
+                  </ul>
+                </li>
+              </ul>
+            </Card.Body>
+          </Accordion.Collapse>
+        </Card>
+        <Card>
+          <Card.Header>
+            <Accordion.Toggle as={Button} variant="link" eventKey="1">
+              Contact US
+            </Accordion.Toggle>
+          </Card.Header>
+          <Accordion.Collapse eventKey="1">
+            <Card.Body>Hello! I'm another body</Card.Body>
+          </Accordion.Collapse>
+        </Card>
+      </Accordion>
     </div>
   );
 }
