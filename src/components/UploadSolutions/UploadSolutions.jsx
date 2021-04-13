@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.css";
 import "./uploadSoluitons.css";
 
 export default function UploadSolutions() {
-  const { register, handleSubmit, control } = useForm();
+  const { register, handleSubmit } = useForm();
   const onSubmit = (data) => console.log(data);
-  const [files, setFiles] = useState();
 
   return (
     <div className="uploadSolutions-container">
