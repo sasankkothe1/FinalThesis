@@ -49,7 +49,23 @@ export default function HowTo() {
                 <li>
                   Fill in the form.
                   <ul>
-                    <li>Make sure</li>
+                    <li>
+                      Make sure you filled the form correctly.
+                      <ul>
+                        <li>Name and email are mandatory</li>
+                        <li>
+                          We will not share your email with anyone. The same
+                          email is used in future for further communication
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      Upload only files with formats .zip, .tar.gz, *.txt files
+                    </li>
+                    <li>
+                      Please make sure solution file format is according to this
+                      format. Other wise, the system will reject the files
+                    </li>
                   </ul>
                 </li>
               </ul>
@@ -58,7 +74,7 @@ export default function HowTo() {
         </Card>
         <Card>
           <Card.Header>
-            <Accordion.Toggle as={Button} variant="link" eventKey="1">
+            <Accordion.Toggle as={Button} variant="link" eventKey="2">
               Contact US
             </Accordion.Toggle>
           </Card.Header>
