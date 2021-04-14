@@ -1,18 +1,25 @@
 import React from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 
+import "./howTo.css";
+
 export default function HowTo() {
   return (
     <div className="howTo-container">
       <Accordion defaultActiveKey="0">
         <Card>
           <Card.Header>
-            <Accordion.Toggle as={Button} variant="link" eventKey="0">
+            <Accordion.Toggle
+              className="accordian-titles"
+              as={Button}
+              variant="link"
+              eventKey="0"
+            >
               Find the problem sets
             </Accordion.Toggle>
           </Card.Header>
           <Accordion.Collapse eventKey="0">
-            <Card.Body>
+            <Card.Body className="accordian-description">
               <ul>
                 <li>Click on "problem sets" options in the navigation bar</li>
                 <li>
@@ -36,7 +43,12 @@ export default function HowTo() {
         </Card>
         <Card>
           <Card.Header>
-            <Accordion.Toggle as={Button} variant="link" eventKey="1">
+            <Accordion.Toggle
+              className="accordian-titles"
+              as={Button}
+              variant="link"
+              eventKey="1"
+            >
               Upload the solution
             </Accordion.Toggle>
           </Card.Header>
@@ -63,8 +75,11 @@ export default function HowTo() {
                       Upload only files with formats .zip, .tar.gz, *.txt files
                     </li>
                     <li>
-                      Please make sure solution file format is according to this
-                      format. Other wise, the system will reject the files
+                      Please make sure solution file format is according to this{" "}
+                      <a href="./sampleSolution_mm_j30.txt" download>
+                        format(mm_j30)
+                      </a>
+                      . Other wise, the system will reject the files
                     </li>
                   </ul>
                 </li>
@@ -74,12 +89,29 @@ export default function HowTo() {
         </Card>
         <Card>
           <Card.Header>
-            <Accordion.Toggle as={Button} variant="link" eventKey="2">
+            <Accordion.Toggle
+              className="accordian-titles"
+              as={Button}
+              variant="link"
+              eventKey="2"
+            >
               Contact US
             </Accordion.Toggle>
           </Card.Header>
           <Accordion.Collapse eventKey="2">
-            <Card.Body>Hello! I'm another body</Card.Body>
+            <Card.Body>
+              <ul>
+                <li>
+                  Please send email to sample@tum.de for any questions.
+                  <ul>
+                    <li>
+                      Make sure to mention the name of the person who solved or
+                      submitted the solution
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </Card.Body>
           </Accordion.Collapse>
         </Card>
       </Accordion>
