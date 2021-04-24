@@ -1,12 +1,25 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { upload } from "../../services/uploadFile";
 import "bootstrap/dist/css/bootstrap.css";
 import "./uploadSoluitons.css";
 
 export default function UploadSolutions() {
   const { register, handleSubmit } = useForm();
-  const onSubmit = (data) => console.log(data);
+
+  const onSubmit = (data) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("titleOfPaper", data.titleOfPaper);
+    formData.append("contributors", data.contributors);
+    for (var i = 0; i < data.solutions.length; i++) {
+      // console.log(data.solutions[i]);
+      formData.append("files", data.solutions[i]);
+    }
+    const successStatus = upload(formData);
+  };
 
   return (
     <div className="uploadSolutions-container">
@@ -14,7 +27,11 @@ export default function UploadSolutions() {
         Please fill in the following details and upload your solutions
       </h4>
       <div className="uploadSolutions-form-container">
-        <Form class="uploadSolutions-form" onSubmit={handleSubmit(onSubmit)}>
+        <Form
+          id="upload-form"
+          className="uploadSolutions-form"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <h5 className="form-inner-headings">Contact Details</h5>
           <Row className="form-inner-row">
             <Col>
