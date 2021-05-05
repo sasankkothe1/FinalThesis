@@ -4,6 +4,7 @@ const sendTheMail = (firstName, recipient, subject, content) => {
 
     const transporter = nodeMailer.createTransport({
         service: "outlook",
+        secure: false,
         auth: {
             user: "pspliboperationsmanagement@outlook.com",
             pass: "psplib123$"
@@ -14,7 +15,7 @@ const sendTheMail = (firstName, recipient, subject, content) => {
         from: "pspliboperationsmanagement@outlook.com",
         to: recipient,
         subject: subject,
-        text: `${firstName} yayys....email works now. Hope you are doing great ${content}`
+        text: `Dear ${firstName},\n Hope you are doing great.\n ${content}`
     };
 
     transporter.sendMail(options, (err, info) => {

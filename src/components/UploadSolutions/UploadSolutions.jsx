@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { upload } from "../../services/uploadFile";
@@ -6,19 +6,43 @@ import "bootstrap/dist/css/bootstrap.css";
 import "./uploadSoluitons.css";
 
 export default function UploadSolutions() {
-  const { register, handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  const onSubmit = (data) => {
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("email", data.email);
-    formData.append("titleOfPaper", data.titleOfPaper);
-    formData.append("contributors", data.contributors);
-    for (var i = 0; i < data.solutions.length; i++) {
-      // console.log(data.solutions[i]);
-      formData.append("files", data.solutions[i]);
+  const [emailError, setEmailError] = useState(false);
+
+  const checkformValidity = (data) => {
+    if (data.name === undefined) {
+      return false;
+    } else if (
+      data.email === undefined ||
+      !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
+        data.email
+      )
+    ) {
+      setEmailError(true);
+      return false;
+    } else {
+      return true;
     }
-    const successStatus = upload(formData);
+  };
+  const onSubmit = (data) => {
+    const isFormValid = checkformValidity(data);
+    if (isFormValid) {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("titleOfPaper", data.titleOfPaper);
+      formData.append("contributors", data.contributors);
+      for (var i = 0; i < data.solutions.length; i++) {
+        // console.log(data.solutions[i]);
+        formData.append("files", data.solutions[i]);
+      }
+      upload(formData);
+    } else console.log("form not valid");
   };
 
   return (
@@ -38,10 +62,15 @@ export default function UploadSolutions() {
               <Form.Group controlId="firstname">
                 <Form.Text className="text-muted flags">[Mandatory]</Form.Text>
                 <Form.Control
-                  {...register("name")}
+                  {...register("name", { required: true })}
                   type="text"
                   placeholder="First Name, Last Name"
                 />
+                {errors?.name?.type === "required" && (
+                  <Form.Text className="text-muted flags error-msgs">
+                    Please fill the name
+                  </Form.Text>
+                )}
               </Form.Group>
             </Col>
 
@@ -49,10 +78,18 @@ export default function UploadSolutions() {
               <Form.Group controlId="lastname">
                 <Form.Text className="text-muted flags">[Mandatory]</Form.Text>
                 <Form.Control
-                  {...register("email")}
+                  {...register("email", {
+                    required: true,
+                    pattern: !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                  })}
                   type="text"
                   placeholder="Email ID"
                 />
+                {emailError && (
+                  <Form.Text className="text-muted flags error-msgs">
+                    Please check the email address
+                  </Form.Text>
+                )}
                 <Form.Text className="text-muted flags">
                   [Solution status will be sent to this email address]
                 </Form.Text>

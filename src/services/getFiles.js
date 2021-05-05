@@ -7,6 +7,7 @@ let downloadFileURL = `http://${backend.URL}:${backend.PORT}/downloadFile`
 export const getFiles = typeOfProblem => {
     console.log(getTheFileListURL + "/" + typeOfProblem);
     return axios.get(getTheFileListURL + "/" + typeOfProblem).then(({ data }) => {
+        console.log(data)
         return JSON.stringify(data);
     })
         .catch(err => console.log(err));

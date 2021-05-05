@@ -22,6 +22,10 @@
   justify-content: center;
 }
 
+.flags.error-msgs {
+  color: red !important;
+}
+
 .flags {
   color: black !important;
   font-size: 10px;

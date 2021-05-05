@@ -3,9 +3,11 @@ const app = express();
 const cors = require('cors');
 const expressFileUpload = require('express-fileupload');
 const fs = require('fs');
+const axios = require('axios')
 
-// spawn is used to run python files -- the python file is called at the end of the file
-var spawn = require('child_process').spawn;
+// captcha keys of server
+const { CaptchaKeys } = require('./CaptchaKeys');
+
 
 // location and the configurations of the fileStore
 const { fileStore } = require('./fileStoreConfig.js');
@@ -48,38 +50,57 @@ downloadFile.route('/').get((req, res) => {
 
 // upload function that saves the data sent by the user to the backend
 upload.route('/').post((req, res) => {
+
     const uploadDateTime = `${date.getDate()}_${date.getMonth()}_${date.getFullYear()}/${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
     const uploaderName = req.body.name;
-    const dirExists = true;
+    const uploaderEmail = req.body.email;
     var pathForFileSaving = `../../fileStore/UploadedSolutions/${uploaderName.replace(" ", "_")}/${uploadDateTime}/`;
-    console.log(pathForFileSaving);
-    console.log(fs.existsSync(pathForFileSaving));
     if (!fs.existsSync(pathForFileSaving)) fs.mkdirSync(pathForFileSaving, { recursive: true }, err => { console.log(err) });
     const fileArray = req.files;
-    var successfullyUploaded = true;
+    let successfullyUploaded = true;
     var uploadingError = null;
-    for (var i = 0; i < (fileArray.files).length; i++) {
-        var sampleFile = (fileArray.files)[i];
-        sampleFile.mv(pathForFileSaving + sampleFile.name, err => {
-            res.status(500).send(err);
+    if ((fileArray.files).length === undefined) {
+        var temp = fileArray.files;
+        temp.mv(pathForFileSaving + temp.name, err => {
+            if (!err) {
+                successfullyUploaded = true;
+                uploadingError = err
+                res.status(200);
+            } else {
+                successfullyUploaded = false
+                uploadingError = true
+                res.status(500).send(err);
+            }
         })
+    } else {
+        for (var i = 0; i < (fileArray.files).length; i++) {
+            var tempFile = (fileArray.files)[i];
+            console.log(tempFile)
+            tempFile.mv(pathForFileSaving + tempFile.name, err => {
+                if (err) res.status(500).send(err);
+                else res.status(200)
+            })
+        }
     }
-    if (successfullyUploaded && !uploadingError) res.status(200).send("Uploaded Successfully");
+    if (fs.existsSync(pathForFileSaving)) console.log(evaluateSolution(pathForFileSaving, uploaderName, uploaderEmail));
+    if (successfullyUploaded && !uploadingError) {
+        mailService.sendTheMail(uploaderName, uploaderEmail, "upload successful", "Congratulations. We have recieved your files. You will further be notified with results and status");
+        res.status(200).send("Uploaded Successfully");
+    }
     else res.status(500).send(uploadingError);
 });
 
-// mailService.sendTheMail("Sasank", "sasank.kothe@tum.de", "you passed the test", "congratulations");
+const evaluateSolution = (pathForFileSaving, uploaderName, uploaderEmail) => {
+    let isError, error
 
-let py = spawn('python', ['./logics/helloworld.py']);
-let dataString = "";
+    axios.post("http://localhost:5000/", { pathForFileSaving }).then(res => {
+        isError = res.data[0]
+        error = res.data[1]
+        if (isError) mailService.sendTheMail(uploaderName, uploaderEmail, "Status of the solution", "Following are are errors of the solution :\n" + error);
+        else mailService.sendTheMail(uploaderName, uploaderEmail, "Status of your solution", "There are no errors in the solution. You will be updated if you solution is better solution or not from the existing solutions");
+    })
 
-py.stdout.on('data', data => {
-    dataString = data.toString();
-});
-
-py.stdout.on('end', () => {
-    // console.log(dataString);
-})
+}
 
 app.listen(PORT, function () {
     console.log("Server is running on Port: " + PORT);
