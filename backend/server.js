@@ -52,6 +52,7 @@ downloadFile.route('/').get((req, res) => {
 upload.route('/').post((req, res) => {
 
     const uploadDateTime = `${date.getDate()}_${date.getMonth()}_${date.getFullYear()}/${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
+    const userData = req.body;
     const uploaderName = req.body.name;
     const uploaderEmail = req.body.email;
     var pathForFileSaving = `../../fileStore/UploadedSolutions/${uploaderName.replace(" ", "_")}/${uploadDateTime}/`;
@@ -75,29 +76,34 @@ upload.route('/').post((req, res) => {
     } else {
         for (var i = 0; i < (fileArray.files).length; i++) {
             var tempFile = (fileArray.files)[i];
-            console.log(tempFile)
             tempFile.mv(pathForFileSaving + tempFile.name, err => {
                 if (err) res.status(500).send(err);
                 else res.status(200)
             })
         }
     }
-    if (fs.existsSync(pathForFileSaving)) console.log(evaluateSolution(pathForFileSaving, uploaderName, uploaderEmail));
-    if (successfullyUploaded && !uploadingError) {
-        mailService.sendTheMail(uploaderName, uploaderEmail, "upload successful", "Congratulations. We have recieved your files. You will further be notified with results and status");
-        res.status(200).send("Uploaded Successfully");
-    }
-    else res.status(500).send(uploadingError);
+    console.log(userData)
+    if (fs.existsSync(pathForFileSaving)) console.log(evaluateSolution(userData, pathForFileSaving, uploaderName, uploaderEmail));
+    // if (successfullyUploaded && !uploadingError) {
+    //     mailService.sendTheMail(uploaderName, uploaderEmail, "upload successful", "Congratulations. We have recieved your files. You will further be notified with results and status");
+    //     res.status(200).send("Uploaded Successfully");
+    // }
+    // else res.status(500).send(uploadingError);
 });
 
-const evaluateSolution = (pathForFileSaving, uploaderName, uploaderEmail) => {
-    let isError, error
+const evaluateSolution = (userData, pathForFileSaving, uploaderName, uploaderEmail) => {
+    let isError, error;
 
-    axios.post("http://localhost:5000/", { pathForFileSaving }).then(res => {
-        isError = res.data[0]
-        error = res.data[1]
-        if (isError) mailService.sendTheMail(uploaderName, uploaderEmail, "Status of the solution", "Following are are errors of the solution :\n" + error);
-        else mailService.sendTheMail(uploaderName, uploaderEmail, "Status of your solution", "There are no errors in the solution. You will be updated if you solution is better solution or not from the existing solutions");
+    console.log(userData)
+
+    axios.post("http://localhost:5000/", { pathForFileSaving, userData }).then(res => {
+
+        // response "res" is a tuple (fileName, instancePath, solutionPath, makespan, isError, error)
+
+        console.log(res.data)
+
+        // if (isError) mailService.sendTheMail(uploaderName, uploaderEmail, "Status of the solution", "Following are are errors of the solution :\n" + error);
+        // else mailService.sendTheMail(uploaderName, uploaderEmail, "Status of your solution", "There are no errors in the solution. You will be updated if you solution is better solution or not from the existing solutions");
     })
 
 }

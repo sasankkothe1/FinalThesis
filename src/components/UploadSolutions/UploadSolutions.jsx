@@ -41,6 +41,7 @@ export default function UploadSolutions() {
         // console.log(data.solutions[i]);
         formData.append("files", data.solutions[i]);
       }
+      formData.append("typeOfInstance", data.typeOfInstance);
       upload(formData);
     } else console.log("form not valid");
   };
@@ -131,6 +132,17 @@ export default function UploadSolutions() {
             </Col>
           </Row>
           <h5 className="form-inner-headings">Solutions</h5>
+          <Row className="form-inner-row">
+            <Col>
+              <Form.Group controlId="typeOfInstance">
+                <Form.Text className="text">Select type of instance</Form.Text>
+                <Form.Control {...register("typeOfInstance")} as="select">
+                  <option>rcpsp_sm</option>
+                  <option>rcpsp_mm</option>
+                </Form.Control>
+              </Form.Group>
+            </Col>
+          </Row>
           <Row className="form-inner-row">
             <Col>
               <Form.Group controlId="solutions">
