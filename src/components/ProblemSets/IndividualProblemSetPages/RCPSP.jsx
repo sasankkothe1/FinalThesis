@@ -10,14 +10,14 @@ export default function RCPSP() {
   const [rcpspFileObject, setrcpspFileObject] = useState();
 
   useEffect(() => {
-    getFiles("rcpsp").then((rcpspFiles) => {
+    getFiles("rcpsp/sm").then((rcpspFiles) => {
       setrcpspFileObject(createFileObject(rcpspFiles));
     });
   }, []);
 
   const getFileFromServer = (e) => {
     const fileName = e.target.innerHTML;
-    downloadFile("rcpsp/" + fileName);
+    downloadFile("rcpsp/sm/" + fileName);
   };
 
   return (

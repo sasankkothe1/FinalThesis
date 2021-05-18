@@ -37,8 +37,9 @@ app.use("/downloadFile", downloadFile);
 app.use("/upload", upload);
 
 
-getTheFileList.route('/rcpsp').get((req, res) => {
-    res.status(200).json(readDir.readDir(`${fileStore.LOCATION}/rcpsp`));
+getTheFileList.route('/rcpsp/:mode').get((req, res) => {
+    let mode = req.params.mode
+    res.status(200).json(readDir.readDir(`${fileStore.LOCATION}/rcpsp/${mode}`));
 });
 
 // sending the file to the frontend for user to download it

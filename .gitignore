@@ -35,3 +35,8 @@ psplib/model/__pycache__
 
 #temp in model
 model/temp
+
+# python virtual environment (venv) from model folder and also some virtual config files and .pyc files
+model/venv
+model/pyvenv.cfg
+model/*.pyc

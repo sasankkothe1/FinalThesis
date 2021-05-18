@@ -188,14 +188,6 @@ class Project():
             for line_index, line in enumerate(file):
 
                 if "Makespan" in line:
-                    makespan = line.split(":")
-                    self.claimed_makespan = int(makespan[1])
-
-        with open(filename, 'r') as file:
-            file = list(file)
-            for line_index, line in enumerate(file):
-
-                if "Makespan" in line:
 
                     makespan = line.split(":")
                     self.claimed_makespan = int(makespan[1])
@@ -218,81 +210,92 @@ class Project():
         # Doubly-constrained resources
         # These also need to be implemented
 
-        if mode is "sm":
+        for node in self.set_of_nodes:
+            node.finish = node.start + \
+                node.durations[node.execution_mode - 1]
+            # print(node.finish)
+
+        resource_consumption_profiles = []
+
+        print(len(self.set_of_nodes))
+        # print(self.renewable_resourceavailability[:])
+
+        for t in range(self.claimed_makespan + 1):
+
+            resource_availability_t = self.renewable_resourceavailability[:]
+
+            resource_consumption_t = [0] * \
+                self.number_of_renewable_resources
+
+            active_nodes = []
 
             for node in self.set_of_nodes:
-                node.finish = node.start + \
-                    node.durations[node.execution_mode - 1]
-                # print(node.finish)
+                # print(node.start, node.finish)
+                # check if node is active:
+                if node.start <= t and node.finish > t:
+                    # check whether precedence constraint is violated
+                    active_nodes.append(node.name)
+                    for predecessor_node in node.predecessors:
+                        if predecessor_node.finish <= t:
+                            pass
+                        else:
+                            self.isError = True
+                            self.error = "Error! Precedence violated, " + "node: " + node.name + \
+                                " ,predecessor: " + predecessor_node.name
+                            break
+                            # print("Error! Precedence violated")
+                            # print("node: " + node.name)
+                            # print("predecessor: " + predecessor_node.name)
+                            # print("active nodes:")
+                            # print(active_nodes)
+                            # break
+                    # check whether renewable resource consumption constraint is violated
+                    for resource_index in range(self.number_of_renewable_resources):
+                        resource_availability_t[resource_index] -= \
+                            node.renewable_resource_requirements[node.execution_mode -
+                                                                 1][resource_index]
+                        resource_consumption_t[resource_index] += \
+                            node.renewable_resource_requirements[node.execution_mode -
+                                                                 1][resource_index]
+                        if resource_availability_t[resource_index] < 0:
+                            self.isError = True
+                            self.error = "Error! Resource Consumption violated, " + "resource_index: " + str(resource_index) + \
+                                ", t: " + str(t)
+                            break
+                            # print("Error! Resource Consumption violated")
+                            # print("resource_index : " + str(resource_index))
+                            # print("t: " + str(t))
+                            # print("active nodes:")
+                            # print(active_nodes)
 
-            resource_consumption_profiles = []
-
-            print(len(self.set_of_nodes))
-            # print(self.renewable_resourceavailability[:])
-
-            for t in range(self.claimed_makespan + 1):
-
-                resource_availability_t = self.renewable_resourceavailability[:]
-
-                resource_consumption_t = [0] * \
-                    self.number_of_renewable_resources
-
-                active_nodes = []
-
-                for node in self.set_of_nodes:
-                    # print(node.start, node.finish)
-                    # check if node is active:
-                    if node.start <= t and node.finish > t:
-                        # check whether precedence constraint is violated
-                        active_nodes.append(node.name)
-                        for predecessor_node in node.predecessors:
-                            if predecessor_node.finish <= t:
-                                pass
-                            else:
+                    if mode is "mm":
+                        # check is non-renewable resource consumption constraint is violated
+                        for resource_index in range(self.number_of_nonrenewable_resources):
+                            self.non_renewable_resourceavailability[
+                                resource_index] -= node.nonrenewable_resource_requirements[node.execution_mode - 1][resource_index]
+                            resource_consumption_t[resource_index] += node.nonrenewable_resource_requirements[node.execution_mode - 1][resource_index]
+                            if self.non_renewable_resourceavailability[resource_index] < 0:
                                 self.isError = True
-                                self.error = "Error! Precedence violated, " + "node: " + node.name + \
-                                    " ,predecessor: " + predecessor_node.name
+                                self.error = "Error! Resource consumption violated, " + \
+                                    "resource_index: " + \
+                                    str(resource_index) + ", t: " + str[t]
                                 break
-                                # print("Error! Precedence violated")
-                                # print("node: " + node.name)
-                                # print("predecessor: " + predecessor_node.name)
-                                # print("active nodes:")
-                                # print(active_nodes)
-                                # break
-                        # check whether renewable resource consumption constraint is violated
-                        for resource_index in range(self.number_of_renewable_resources):
-                            resource_availability_t[resource_index] -= \
-                                node.renewable_resource_requirements[node.execution_mode -
-                                                                     1][resource_index]
-                            resource_consumption_t[resource_index] += \
-                                node.renewable_resource_requirements[node.execution_mode -
-                                                                     1][resource_index]
-                            if resource_availability_t[resource_index] < 0:
-                                self.isError = True
-                                self.error = "Error! Resource Consumption violated, " + "resource_index: " + str(resource_index) + \
-                                    ", t: " + str(t)
-                                break
-                                # print("Error! Resource Consumption violated")
-                                # print("resource_index : " + str(resource_index))
-                                # print("t: " + str(t))
-                                # print("active nodes:")
-                                # print(active_nodes)
 
-                resource_consumption_profiles.append(resource_consumption_t)
+            resource_consumption_profiles.append(resource_consumption_t)
 
-            time_range = range(self.claimed_makespan + 1)
+        time_range = range(self.claimed_makespan + 1)
 
-            if(self.claimed_makespan != max([_.finish for _ in self.set_of_nodes])):
-                self.isError = True
-                self.error = "The makespan is incorrect. Total Duration is: ", max(
-                    [_.finish for _ in self.set_of_nodes])
+        if(self.claimed_makespan != max([_.finish for _ in self.set_of_nodes])):
+            self.isError = True
+            self.error = "The makespan is incorrect. Total Duration is: ", max(
+                [_.finish for _ in self.set_of_nodes])
 
-            # print("self.claimed_makespan ", self.claimed_makespan)
+        # print("self.claimed_makespan ", self.claimed_makespan)
 
-            # print("Duration:")
-            # print(max([_.finish for _ in self.set_of_nodes]))
+        # print("Duration:")
+        # print(max([_.finish for _ in self.set_of_nodes]))
 
-            # print("valid_solution!")
+        # print("valid_solution!")
 
 
 def checkRCPSP(problemInstancePath, solutionFilePath, mode):

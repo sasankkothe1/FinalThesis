@@ -1,6 +1,8 @@
 import os
 from flask import Flask, json, request, jsonify
 from datetime import datetime
+
+from flask.helpers import send_from_directory
 from extractSolutionFiles import extractSolutionFiles
 from pymongo import MongoClient
 from openpyxl import Workbook
@@ -39,20 +41,26 @@ def flaskServer():
     userData = requestData['userData']
 
     # store the submission into the MondoDB client collection = submissions
-    # storeSubmission(userData, answer)
+    storeSubmission(userData, answer)
+
+    for el in answer:
+        isSubmissionBest(userData, el)
 
     # to check if every solution is best or not and create report
     reportList = []
     for el in answer:
         reportList.append(isSubmissionBest(userData, el))
 
-    # print(reportList)
+    # for report in reportList:
+    #     print("------>", report)
 
     # create the report.xlsx
     reportCreated = createReport(reportList)
 
     if reportCreated:
         sendEmail(userData)
+        reportCreated = False
+        reportList = []
 
     # convert the answer to json and send the answer
     return jsonify(answer)
@@ -93,6 +101,8 @@ def storeSubmission(userData, answer):
 
 def isSubmissionBest(userData, el):
 
+    # print("userData --> ", userData)
+    # print("el --> ", el)
     bestResultsCollection = db['bestresults']
 
     ubSwap = False
@@ -101,36 +111,41 @@ def isSubmissionBest(userData, el):
     lbDeviationPercentage = 0
     docUB = 0
     docLB = 0
-    objectiveFunc = 0
+    objectiveFunc = el[5]
     feasible = False
+
+    instance = el[1]+el[2]+"_"+el[3]
 
     if el[6] == False:
         feasible = True
 
     query = {"jobs": el[1], "par": el[2], "inst": el[3]}
 
-    instance = el[1]+el[2]+"_"+el[3]
+    foundResult = bestResultsCollection.find(
+        query)   # a mongo cursor is returned
 
-    if bestResultsCollection.count_documents(query) == 0:
-        post = {
-            "instanceType": userData['typeOfInstance'],
-            "jobs": el[1],
-            "par": el[2],
-            "inst": el[3],
-            "ub": el[5],
-            "lb": 1,
-            "AuthorUB": userData['name'],
-            "AuthorLB": userData['name']
-        }
-        bestResultsCollection.insert_one(post)
+    if foundResult.count() == 0:
+        if feasible:
+            post = {
+                "instanceType": userData['typeOfInstance'],
+                "jobs": el[1],
+                "par": el[2],
+                "inst": el[3],
+                "ub": el[5],
+                "lb": 1,
+                "AuthorUB": userData['name'],
+                "AuthorLB": userData['name']
+            }
+            bestResultsCollection.insert_one(post)
+        else:
+            return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, 0, 0, 0, 0, ubSwap, lbSwap))
     else:
-        fetchDocument = bestResultsCollection.find(query)
-        for doc in fetchDocument:
-            docUB = doc['ub']
+        for result in foundResult:
+            docUB = result['ub']
             userUB = el[5]
-            docLB = doc['lb']
-            userLB = el[5]
-            objectiveFunc = userUB
+
+            docLB = result['lb']
+            userLB = 0
 
             if userUB < docUB:
                 bestResultsCollection.update(
@@ -143,7 +158,27 @@ def isSubmissionBest(userData, el):
                 lbSwap = True
                 lbDeviationPercentage = ((userLB - docLB) / docLB) * 100
 
-    return (instance, userData['typeOfInstance'], feasible, objectiveFunc, docLB, docUB, lbDeviationPercentage, ubDeviationPercentage, ubSwap, lbSwap)
+        return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, docLB, docUB, lbDeviationPercentage, ubDeviationPercentage, ubSwap, lbSwap))
+    # else:
+    #     fetchDocument = bestResultsCollection.find(query)
+    #     for doc in fetchDocument:
+    #         docUB = doc['ub']
+    #         userUB = el[5]
+    #         docLB = doc['lb']
+    #         userLB = el[5]
+
+    #         if userUB < docUB:
+    #             bestResultsCollection.update(
+    #                 query, {"$set": {"ub": userUB, "AuthorUB": userData['name']}})
+    #             ubSwap = True
+    #             ubDeviationPercentage = ((userUB - docUB) / docUB) * 100
+    #         if userLB > docLB:
+    #             bestResultsCollection.update(
+    #                 query, {"$set": {"lb": userLB, "AuthorLB": userData['name']}})
+    #             lbSwap = True
+    #             lbDeviationPercentage = ((userLB - docLB) / docLB) * 100
+
+    # return (instance, userData['typeOfInstance'], feasible, objectiveFunc, docLB, docUB, lbDeviationPercentage, ubDeviationPercentage, ubSwap, lbSwap)
 
 
 def createReport(reportList):
@@ -173,6 +208,8 @@ def createReport(reportList):
     for el in reportList:
         row += 1
         for i in range(0, len(el)):
+            if i == 3:
+                print("from report ---> ", el[i])
             sheet.cell(column=col, row=row, value=str(el[i]))
             col += 1
         col = 1
