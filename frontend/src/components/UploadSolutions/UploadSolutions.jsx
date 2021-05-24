@@ -53,6 +53,7 @@ export default function UploadSolutions() {
       </h4>
       <div className="uploadSolutions-form-container">
         <Form
+          encType="multipart/form-data"
           id="upload-form"
           className="uploadSolutions-form"
           onSubmit={handleSubmit(onSubmit)}
@@ -81,7 +82,8 @@ export default function UploadSolutions() {
                 <Form.Control
                   {...register("email", {
                     required: true,
-                    pattern: !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                    pattern:
+                      !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
                   })}
                   type="text"
                   placeholder="Email ID"

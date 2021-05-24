@@ -5,8 +5,6 @@ const expressFileUpload = require('express-fileupload');
 const fs = require('fs');
 const axios = require('axios')
 
-// captcha keys of server
-const { CaptchaKeys } = require('./CaptchaKeys');
 
 
 // location and the configurations of the fileStore

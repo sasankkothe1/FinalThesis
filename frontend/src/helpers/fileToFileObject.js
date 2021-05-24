@@ -11,7 +11,6 @@ export const createFileObject = fileListString => {
 
     fileArray.map(file => {
         if (file !== ".DS_Store") {
-            console.log(file)
             let n_jobs = file.split(".")[0].match(/\d+/)[0] + "";
             if (fileObject.hasOwnProperty(n_jobs)) {
                 if (!fileObject[n_jobs].includes(file)) {

@@ -1,18 +1,21 @@
 import os
+from pathlib import Path
 from flask import Flask, json, request, jsonify
+from flask_cors import CORS
+
 from datetime import datetime
 
 from flask.helpers import send_from_directory
-from extractSolutionFiles import extractSolutionFiles
 from pymongo import MongoClient
 from openpyxl import Workbook
 from flask_mail import Mail, Message
 
+from extractSolutionFiles import extractSolutionFiles
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # mail configs
-mail = Mail(app)
 app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = 'pspliboperationsmanagement@outlook.com'
@@ -22,9 +25,67 @@ app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = True
 mail = Mail(app)
 
+
 client = MongoClient(
     "mongodb+srv://testpsplib:testpsplib@cluster0.trtwg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client['psplibtest']
+
+ProblemSetsLocation = "../../fileStore/problemSets"
+uploadedFilesLocation = "../../fileStore/UploadedSolutions"
+
+
+@app.route('/getTheFileList', methods=['GET'])
+def fileToDownload():
+    problemType = request.args.get('problemType')
+    mode = request.args.get('mode')
+    pathToDirectory = ProblemSetsLocation + "/" + problemType + "/" + mode
+    return jsonify(os.listdir(pathToDirectory))
+
+
+@app.route('/downloadFile', methods=['GET'])
+def sendFile():
+    problemType = request.args.get('problemType')
+    mode = request.args.get('mode')
+    fileName = request.args.get('fileName')
+    pathToDirectory = ProblemSetsLocation + "/" + problemType + "/" + mode
+    try:
+        return send_from_directory(pathToDirectory, fileName, as_attachment=True, attachment_filename=os.path.basename(fileName))
+    except FileNotFoundError:
+        print("fileNotFound")
+
+
+@app.route('/upload', methods=['POST'])
+def uploadFile():
+    fileArray = request.files.getlist('files')
+    name = request.form['name']
+    uploadTime = str(datetime.now())
+    typeOfInstance = request.form['typeOfInstance']
+
+    deniedFileExtensions = ['mp4', 'mp3', 'py', 'java',
+                            'class', 'php', 'png', 'jpg', 'jpeg', 'gif']
+
+    for file in fileArray:
+        fileExtension = file.filename.split('.')[-1].lower()
+        pathToBeStoredAt = uploadedFilesLocation + "/" + name + "/" + uploadTime
+        if fileExtension in deniedFileExtensions:
+            print("entered")
+            emailID = request.form['email']
+            msg = Message("Error in the files Uploaded",
+                          sender="pspliboperationsmanagement@outlook.com", recipients=[emailID])
+            msg.body = "You have uploaded files with wrong extensions. Please " + \
+                file.filename+" before uploading"
+            mail.send(msg)
+            return "wrong upload", 422
+        else:
+            Path(pathToBeStoredAt).mkdir(
+                mode=0o777, parents=True, exist_ok=True)
+            file.save(os.path.join(pathToBeStoredAt, file.filename))
+
+    return 'uploaded'
+
+
+# ImmutableMultiDict([('name', 'Sasank Kothe'), ('email', 'sasankkothe@gmail.com'),
+# ('titleOfPaper', ''), ('contributors', ''), ('typeOfInstance', 'rcpsp_sm')])
 
 
 @app.route('/', methods=['POST'])
@@ -159,26 +220,6 @@ def isSubmissionBest(userData, el):
                 lbDeviationPercentage = ((userLB - docLB) / docLB) * 100
 
         return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, docLB, docUB, lbDeviationPercentage, ubDeviationPercentage, ubSwap, lbSwap))
-    # else:
-    #     fetchDocument = bestResultsCollection.find(query)
-    #     for doc in fetchDocument:
-    #         docUB = doc['ub']
-    #         userUB = el[5]
-    #         docLB = doc['lb']
-    #         userLB = el[5]
-
-    #         if userUB < docUB:
-    #             bestResultsCollection.update(
-    #                 query, {"$set": {"ub": userUB, "AuthorUB": userData['name']}})
-    #             ubSwap = True
-    #             ubDeviationPercentage = ((userUB - docUB) / docUB) * 100
-    #         if userLB > docLB:
-    #             bestResultsCollection.update(
-    #                 query, {"$set": {"lb": userLB, "AuthorLB": userData['name']}})
-    #             lbSwap = True
-    #             lbDeviationPercentage = ((userLB - docLB) / docLB) * 100
-
-    # return (instance, userData['typeOfInstance'], feasible, objectiveFunc, docLB, docUB, lbDeviationPercentage, ubDeviationPercentage, ubSwap, lbSwap)
 
 
 def createReport(reportList):

@@ -10,14 +10,14 @@ export default function RCPSP() {
   const [rcpspFileObject, setrcpspFileObject] = useState();
 
   useEffect(() => {
-    getFiles("rcpsp/sm").then((rcpspFiles) => {
+    getFiles("?problemType=rcpsp&mode=sm").then((rcpspFiles) => {
       setrcpspFileObject(createFileObject(rcpspFiles));
     });
   }, []);
 
   const getFileFromServer = (e) => {
     const fileName = e.target.innerHTML;
-    downloadFile("rcpsp/sm/" + fileName);
+    downloadFile(`?problemType=rcpsp&mode=sm&fileName=${fileName}`);
   };
 
   return (
