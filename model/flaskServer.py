@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from flask import Flask, json, request, jsonify
+import flask_praetorian
 from flask_cors import CORS
 
 from datetime import datetime
@@ -10,9 +11,10 @@ from pymongo import MongoClient
 from openpyxl import Workbook
 from flask_mail import Mail, Message
 
+
 from extractSolutionFiles import extractSolutionFiles
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # mail configs
@@ -23,16 +25,25 @@ app.config['MAIL_PASSWORD'] = 'psplib123$'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = True
+app.config['SECRET_KEY'] = 'psplib-secret'
+app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
+app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 mail = Mail(app)
-
 
 client = MongoClient(
     "mongodb+srv://testpsplib:testpsplib@cluster0.trtwg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client['psplibtest']
+gaurd = flask_praetorian.Praetorian()
 
 ProblemSetsLocation = "../../fileStore/problemSets"
 uploadedFilesLocation = "../../fileStore/UploadedSolutions"
+ubBestSolutionsLocation = "../../fileStore/bestSolutions/rcpsp/hrs"
+lbBestSolutionsLocation = "../../fileStore/bestSolutions/rcpsp/lb"
+rcpspOPTBestSolutionsLocation = "../../fileStore/bestSolutions/rcpsp/opt"
 
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 
 @app.route('/getTheFileList', methods=['GET'])
 def fileToDownload():
@@ -64,11 +75,11 @@ def uploadFile():
     deniedFileExtensions = ['mp4', 'mp3', 'py', 'java',
                             'class', 'php', 'png', 'jpg', 'jpeg', 'gif']
 
+    pathToBeStoredAt = uploadedFilesLocation + "/" + name + "/" + uploadTime
+
     for file in fileArray:
         fileExtension = file.filename.split('.')[-1].lower()
-        pathToBeStoredAt = uploadedFilesLocation + "/" + name + "/" + uploadTime
         if fileExtension in deniedFileExtensions:
-            print("entered")
             emailID = request.form['email']
             msg = Message("Error in the files Uploaded",
                           sender="pspliboperationsmanagement@outlook.com", recipients=[emailID])
@@ -81,25 +92,23 @@ def uploadFile():
                 mode=0o777, parents=True, exist_ok=True)
             file.save(os.path.join(pathToBeStoredAt, file.filename))
 
+    userData = {'name': request.form['name'], 'email': request.form['email'], 'titleOfPaper': request.form['titleOfPaper'],
+                'contributors': request.form['contributors'], 'typeOfInstance': request.form['typeOfInstance']}
+
+    processSolution(userData, pathToBeStoredAt + "/")
     return 'uploaded'
 
 
 # ImmutableMultiDict([('name', 'Sasank Kothe'), ('email', 'sasankkothe@gmail.com'),
 # ('titleOfPaper', ''), ('contributors', ''), ('typeOfInstance', 'rcpsp_sm')])
 
-
-@app.route('/', methods=['POST'])
-def flaskServer():
-    # get json content from the request
-    requestData = request.get_json()
-    # extracting individual data from json
-    solutionFilesPath = requestData['pathForFileSaving']
-    typeOfInstance = requestData['userData']['typeOfInstance']
+def processSolution(userData, solutionFilesPath):
+    # extracting individual data from dictionary
+    typeOfInstance = userData['typeOfInstance']
 
     answer = extractSolutionFiles(solutionFilesPath, typeOfInstance)
 
-    # change the userData from requestData as tuple
-    userData = requestData['userData']
+    print(answer)
 
     # store the submission into the MondoDB client collection = submissions
     storeSubmission(userData, answer)
@@ -118,6 +127,7 @@ def flaskServer():
     # create the report.xlsx
     reportCreated = createReport(reportList)
 
+    # TODO: Remove this comment
     if reportCreated:
         sendEmail(userData)
         reportCreated = False
@@ -127,6 +137,7 @@ def flaskServer():
     return jsonify(answer)
 
 
+# TODO: consider including the lower bound
 def storeSubmission(userData, answer):
     name = userData['name']
     email = userData['email']
@@ -159,11 +170,19 @@ def storeSubmission(userData, answer):
 
         submissionCollection.insert_one(post)
 
+# 'el' is a tuple of (0: instanceFileName, 1: jobNumber, 2: par number, 3: inst number, 4: locationOfTheFileStore, 5: ub, 6: isError, 7: error)
+
 
 def isSubmissionBest(userData, el):
 
-    # print("userData --> ", userData)
-    # print("el --> ", el)
+    # get the location where the file is originally stored in "originalFileLocation" variable
+    fileName = el[0]
+    originalLocationStoredDirectory = el[4]
+    originalFileLocation = originalLocationStoredDirectory + "/" + fileName
+
+    # store the originalFileobject in "originalFile" variable
+    originalFile = open(originalFileLocation)
+
     bestResultsCollection = db['bestresults']
 
     ubSwap = False
@@ -185,6 +204,7 @@ def isSubmissionBest(userData, el):
     foundResult = bestResultsCollection.find(
         query)   # a mongo cursor is returned
 
+    # check if particular solution is present in the bestSolutions table. if not, insert
     if foundResult.count() == 0:
         if feasible:
             post = {
@@ -200,6 +220,7 @@ def isSubmissionBest(userData, el):
             bestResultsCollection.insert_one(post)
         else:
             return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, 0, 0, 0, 0, ubSwap, lbSwap))
+    # if the solution is already present in the best solution
     else:
         for result in foundResult:
             docUB = result['ub']
@@ -213,11 +234,36 @@ def isSubmissionBest(userData, el):
                     query, {"$set": {"ub": userUB, "AuthorUB": userData['name']}})
                 ubSwap = True
                 ubDeviationPercentage = ((userUB - docUB) / docUB) * 100
+
+                # store the file in the best files directory --> UB
+                # check if the file is already present and remove it
+                if os.path.exists(ubBestSolutionsLocation + "/" + fileName):
+                    os.remove(ubBestSolutionsLocation + "/" + fileName)
+
+                # save the best UB file in the hrs folder of the best solution
+                # create new file and copy the contents of the originalFile into the new file
+                with open(ubBestSolutionsLocation + "/" + fileName, 'a') as newBestfile:
+                    for line in originalFile:
+                        newBestfile.write(line)
+                    newBestfile.close()
+
             if userLB > docLB:
                 bestResultsCollection.update(
                     query, {"$set": {"lb": userLB, "AuthorLB": userData['name']}})
                 lbSwap = True
                 lbDeviationPercentage = ((userLB - docLB) / docLB) * 100
+
+                # store the file in the best files directory --> UB
+                # check if the file is already present and remove it
+                if os.path.exists(lbBestSolutionsLocation + "/" + fileName):
+                    os.remove(lbBestSolutionsLocation + "/" + fileName)
+
+                # save the best UB file in the hrs folder of the best solution
+                # create new file and copy the contents of the originalFile into the new file
+                with open(lbBestSolutionsLocation + "/" + fileName, 'a') as newBestfile:
+                    for line in originalFile:
+                        newBestfile.write(line)
+                    newBestfile.close()
 
         return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, docLB, docUB, lbDeviationPercentage, ubDeviationPercentage, ubSwap, lbSwap))
 
