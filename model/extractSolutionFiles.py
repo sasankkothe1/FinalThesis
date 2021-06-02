@@ -7,7 +7,9 @@ from checkSolution import checkSolution
 # open every solution file, reads the header and creates the problem instance name
 # return the path specific problem instance for the specific solution submitted by the user
 
-problemInstanceDirPath = "../../fileStore/extractedProblemInstances/rcpsp/"
+problemInstanceDirPath = "../../fileStore/extractedProblemInstances/"
+
+# /Users/sasank/Desktop/Thesis/Project/psplib/model/../../fileStore/extractedProblemInstances/rcpsp/j12016_5.sm
 
 
 # returns tuple (solutionFileName, instanceFile and solutionFile)
@@ -16,20 +18,30 @@ problemInstanceDirPath = "../../fileStore/extractedProblemInstances/rcpsp/"
 extractedFilePaths = []
 
 
-def extractFiles(p):
+def extractFiles(p, solutionFilePathParent):
     if os.path.isfile(p):
         extractedFilePaths.append(p)
+        shutil.copy(p, solutionFilePathParent)
     else:
         for dir in os.listdir(p):
             if not dir.startswith('__MAC') and not ".DS" in dir:
                 if os.path.isdir(p):
-                    extractFiles(p + "/" + dir)
+                    extractFiles(p + "/" + dir, solutionFilePathParent)
                 else:
                     for file in os.listdir(p):
                         extractedFilePaths.append(p)
+                        shutil.copy(file, solutionFilePathParent)
 
 
-def getProblemInstance(solutionFilePath):
+def getProblemInstance(solutionFilePath, typeOfInstance):
+
+    # print("solution file path ----> ", solutionFilePath.replace(solutionFilePath.split('/')[-1], ""))
+
+    problemType = typeOfInstance.split("_")[0]
+    # might be used in the future implementation
+    mode = typeOfInstance.split("_")[1]
+
+    finalProblemInstanceDirPath = problemInstanceDirPath + problemType + "/"
 
     if zipfile.is_zipfile(solutionFilePath):
         # paths [] is list that stores the instances paths of the files in the zip files
@@ -40,10 +52,12 @@ def getProblemInstance(solutionFilePath):
         os.mkdir(tempDirpath)
 
         # unzip and extract all the files to the tempDir
-        zipfile.ZipFile(solutionFilePath, 'r').extractall(tempDirpath)
+        zipfile.ZipFile(solutionFilePath, 'r').extractall(tempDirpath)     
 
         # recursively travel the unzipped folder by using above method: extractFiles
-        extractFiles(tempDirpath)
+        # extract files to the solutionFolder also. For this, strip the characters after last "/" to go one folder up
+        tempParentFolderPath = solutionFilePath.replace(solutionFilePath.split('/')[-1], "")
+        extractFiles(tempDirpath, tempParentFolderPath)
 
         # access the paths of the files from extractedFilePaths[] list and read the headers
 
@@ -62,7 +76,7 @@ def getProblemInstance(solutionFilePath):
                 inst_file = inst_set + inst_param + "_" + inst_num + "." + inst_type
 
                 paths.append((fileName, inst_set, inst_param,
-                              inst_num, problemInstanceDirPath+inst_file, file))
+                              inst_num, finalProblemInstanceDirPath+inst_file, file))
 
         print([_[5].split("/")[-1] for _ in paths])
         return paths
@@ -79,7 +93,7 @@ def getProblemInstance(solutionFilePath):
             inst_num = file[3]    # instance number
             # the final instance file name extracted from the header of the solution file
             inst_file = inst_set + inst_param + "_" + inst_num + "." + inst_type
-            path = (fileName, inst_set, inst_param, inst_num, problemInstanceDirPath +
+            path = (fileName, inst_set, inst_param, inst_num, finalProblemInstanceDirPath +
                     inst_file, solutionFilePath)
         return path
 
@@ -90,7 +104,8 @@ def extractSolutionFiles(solutionFilesPath, typeOfInstance):
     extractedProblemInstancesPaths = []
     for solution in os.listdir(solutionFilesPath):
         solutionFilePath = solutionFilesPath + solution
-        problemInstancePath = getProblemInstance(solutionFilePath)
+        problemInstancePath = getProblemInstance(
+            solutionFilePath, typeOfInstance)
         if isinstance(problemInstancePath, list):
             extractedProblemInstancesPaths += problemInstancePath
         else:

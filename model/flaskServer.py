@@ -1,15 +1,16 @@
 import os
 from pathlib import Path
-from flask import Flask, json, request, jsonify
-import flask_praetorian
-from flask_cors import CORS
-
 from datetime import datetime
+from flask import Flask, json, request, jsonify
+from flask_cors import CORS
+from flask.helpers import send_from_directory,  send_file
+from flask_mail import Mail, Message
 
-from flask.helpers import send_from_directory
 from pymongo import MongoClient
 from openpyxl import Workbook
-from flask_mail import Mail, Message
+
+# for creating secret token for the user authentication
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
 
 from extractSolutionFiles import extractSolutionFiles
@@ -25,15 +26,16 @@ app.config['MAIL_PASSWORD'] = 'psplib123$'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = True
-app.config['SECRET_KEY'] = 'psplib-secret'
-app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
-app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
+
+# adding the secret key for the JWT token
+app.config["JWT_SECRET_KEY"] = "secretsuperpsplibthesissasanktum"
+jwt = JWTManager(app)
+
 mail = Mail(app)
 
 client = MongoClient(
     "mongodb+srv://testpsplib:testpsplib@cluster0.trtwg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client['psplibtest']
-gaurd = flask_praetorian.Praetorian()
 
 ProblemSetsLocation = "../../fileStore/problemSets"
 uploadedFilesLocation = "../../fileStore/UploadedSolutions"
@@ -41,26 +43,40 @@ ubBestSolutionsLocation = "../../fileStore/bestSolutions/rcpsp/hrs"
 lbBestSolutionsLocation = "../../fileStore/bestSolutions/rcpsp/lb"
 rcpspOPTBestSolutionsLocation = "../../fileStore/bestSolutions/rcpsp/opt"
 
+
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
 
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+
+    if username != "psplib-secret-username" or password != "psplib-secret-password":
+        return "wrong username and password", 404
+    accessToken = create_access_token(identity=username)
+    return jsonify(accessToken=accessToken)
+
+
 @app.route('/getTheFileList', methods=['GET'])
-def fileToDownload():
+def getTheFileList():
     problemType = request.args.get('problemType')
     mode = request.args.get('mode')
     pathToDirectory = ProblemSetsLocation + "/" + problemType + "/" + mode
+    print(pathToDirectory)
     return jsonify(os.listdir(pathToDirectory))
 
 
 @app.route('/downloadFile', methods=['GET'])
-def sendFile():
+def downloadFile():
     problemType = request.args.get('problemType')
     mode = request.args.get('mode')
     fileName = request.args.get('fileName')
     pathToDirectory = ProblemSetsLocation + "/" + problemType + "/" + mode
     try:
-        return send_from_directory(pathToDirectory, fileName, as_attachment=True, attachment_filename=os.path.basename(fileName))
+        return send_from_directory(pathToDirectory, fileName, as_attachment=True, attachment_filename=fileName)
     except FileNotFoundError:
         print("fileNotFound")
 
@@ -86,7 +102,7 @@ def uploadFile():
             msg.body = "You have uploaded files with wrong extensions. Please " + \
                 file.filename+" before uploading"
             mail.send(msg)
-            return "wrong upload", 422
+            return "your files have unsupported format. Please upload only text, pdf, or zip files", 422
         else:
             Path(pathToBeStoredAt).mkdir(
                 mode=0o777, parents=True, exist_ok=True)
@@ -96,7 +112,7 @@ def uploadFile():
                 'contributors': request.form['contributors'], 'typeOfInstance': request.form['typeOfInstance']}
 
     processSolution(userData, pathToBeStoredAt + "/")
-    return 'uploaded'
+    return 'upload successful', 200
 
 
 # ImmutableMultiDict([('name', 'Sasank Kothe'), ('email', 'sasankkothe@gmail.com'),
@@ -106,9 +122,9 @@ def processSolution(userData, solutionFilesPath):
     # extracting individual data from dictionary
     typeOfInstance = userData['typeOfInstance']
 
-    answer = extractSolutionFiles(solutionFilesPath, typeOfInstance)
+    print("typeOfInstance ", typeOfInstance)
 
-    print(answer)
+    answer = extractSolutionFiles(solutionFilesPath, typeOfInstance)
 
     # store the submission into the MondoDB client collection = submissions
     storeSubmission(userData, answer)
@@ -118,6 +134,7 @@ def processSolution(userData, solutionFilesPath):
 
     # to check if every solution is best or not and create report
     reportList = []
+
     for el in answer:
         reportList.append(isSubmissionBest(userData, el))
 
@@ -133,12 +150,18 @@ def processSolution(userData, solutionFilesPath):
         reportCreated = False
         reportList = []
 
-    # convert the answer to json and send the answer
-    return jsonify(answer)
+    # # convert the answer to json and send the answer
+    # return jsonify(answer)
 
 
 # TODO: consider including the lower bound
 def storeSubmission(userData, answer):
+
+    # username = "psplib-test-user"
+    # password = "psplib-test-password"
+
+    # access_token = create_access_token(identity=username)
+
     name = userData['name']
     email = userData['email']
     titleOfPaper = userData['titleOfPaper']
@@ -178,9 +201,10 @@ def isSubmissionBest(userData, el):
     # get the location where the file is originally stored in "originalFileLocation" variable
     fileName = el[0]
     originalLocationStoredDirectory = el[4]
-    originalFileLocation = originalLocationStoredDirectory + "/" + fileName
+    originalFileLocation = originalLocationStoredDirectory + fileName
 
     # store the originalFileobject in "originalFile" variable
+    # print(originalFileLocation)
     originalFile = open(originalFileLocation)
 
     bestResultsCollection = db['bestresults']

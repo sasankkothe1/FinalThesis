@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
+import { useHistory } from "react-router-dom";
+import { getAccessToken } from "../../services/login";
 
 import "./howTo.css";
 
 export default function HowTo() {
+  const history = useHistory();
+
+  useEffect(() => {
+    let accessToken = getAccessToken();
+    if (!accessToken) history.push("/login");
+  });
+
   return (
     <div className="howTo-container">
       <Accordion defaultActiveKey="0">

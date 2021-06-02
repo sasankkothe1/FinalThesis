@@ -9,7 +9,7 @@ export const upload = data => {
             console.log(res);
             if (res.status === 200) {
                 console.log(res.status);
-                return true;
+                return res.status;
             }
             else return false;
         }).catch(err => console.log(err));

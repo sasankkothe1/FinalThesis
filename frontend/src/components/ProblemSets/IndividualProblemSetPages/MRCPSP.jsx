@@ -1,25 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { ListGroup } from "react-bootstrap";
+import { NavLink, useHistory } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { getFiles, downloadFile } from "../../../services/getFiles";
+import { getAccessToken } from "../../../services/login";
 import { createFileObject } from "../../../helpers/fileToFileObject";
-import { NavLink } from "react-router-dom";
 
 export default function MRCPSP() {
   const [rcpspFileObject, setrcpspFileObject] = useState();
+  const history = useHistory();
 
   useEffect(() => {
-    getFiles("rcpsp/mm").then((rcpspFiles) => {
-      console.log("rcpsp files typeof ", typeof rcpspFiles);
+    let accessToken = getAccessToken();
+    if (!accessToken) history.push("/login");
+
+    getFiles("?problemType=rcpsp&mode=mm").then((rcpspFiles) => {
       setrcpspFileObject(createFileObject(rcpspFiles));
     });
-  }, []);
-
-  console.log("state ", rcpspFileObject);
+  }, [history]);
   const getFileFromServer = (e) => {
     const fileName = e.target.innerHTML;
-    downloadFile("rcpsp/sm/" + fileName);
+    const fileObject = {
+      problemType: "rcpsp",
+      mode: "mm",
+      fileName: fileName,
+    };
+    downloadFile(fileObject);
   };
 
   return (
@@ -38,6 +45,7 @@ export default function MRCPSP() {
               if (index === 0)
                 return (
                   <ListGroup.Item
+                    key={index}
                     variant="dark"
                     className="job-heading"
                   >{`${el} job files`}</ListGroup.Item>

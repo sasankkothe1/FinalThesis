@@ -1,7 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useHistory } from "react-router-dom";
+import { getAccessToken } from "../../services/login";
 import "./about.css";
 
 export default function About() {
+  const history = useHistory();
+
+  useEffect(() => {
+    let accessToken = getAccessToken();
+    if (!accessToken) history.push("/login");
+  });
+
   return (
     <div className="about-container">
       <h4>PROJECT SCHEDULING PROBLEM LIBRARY - PSPLIB</h4>

@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useHistory } from "react-router-dom";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { upload } from "../../services/uploadFile";
 import "bootstrap/dist/css/bootstrap.css";
 import "./uploadSoluitons.css";
+import { getAccessToken } from "../../services/login";
 
 export default function UploadSolutions() {
   const {
@@ -13,6 +15,12 @@ export default function UploadSolutions() {
   } = useForm();
 
   const [emailError, setEmailError] = useState(false);
+  let history = useHistory();
+
+  useEffect(() => {
+    let accessToken = getAccessToken();
+    if (!accessToken) history.push("/login");
+  });
 
   const checkformValidity = (data) => {
     if (data.name === undefined) {

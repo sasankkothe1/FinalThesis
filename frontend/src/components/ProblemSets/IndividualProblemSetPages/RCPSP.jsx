@@ -1,23 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { ListGroup } from "react-bootstrap";
+import { NavLink, useHistory } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { getFiles, downloadFile } from "../../../services/getFiles";
 import { createFileObject } from "../../../helpers/fileToFileObject";
-import { NavLink } from "react-router-dom";
+import { getAccessToken } from "../../../services/login";
 
 export default function RCPSP() {
   const [rcpspFileObject, setrcpspFileObject] = useState();
 
+  let history = useHistory();
+
   useEffect(() => {
+    let accessToken = getAccessToken();
+    if (!accessToken) history.push("/login");
+
     getFiles("?problemType=rcpsp&mode=sm").then((rcpspFiles) => {
       setrcpspFileObject(createFileObject(rcpspFiles));
     });
-  }, []);
+  }, [history]);
 
   const getFileFromServer = (e) => {
     const fileName = e.target.innerHTML;
-    downloadFile(`?problemType=rcpsp&mode=sm&fileName=${fileName}`);
+    const fileObject = {
+      problemType: "rcpsp",
+      mode: "sm",
+      fileName: fileName,
+    };
+    // downloadFile(`?problemType=rcpsp&mode=sm&fileName=${fileName}`);
+    downloadFile(fileObject);
   };
 
   return (
@@ -36,6 +48,7 @@ export default function RCPSP() {
               if (index === 0)
                 return (
                   <ListGroup.Item
+                    key={index}
                     variant="dark"
                     className="job-heading"
                   >{`${el} job files`}</ListGroup.Item>

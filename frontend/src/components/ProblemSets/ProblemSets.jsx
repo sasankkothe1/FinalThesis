@@ -1,5 +1,6 @@
-import React from "react";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
+import { getAccessToken } from "../../services/login";
 import FRCPSP from "./IndividualProblemSetPages/FRCPSP";
 import MRCPSP from "./IndividualProblemSetPages/MRCPSP";
 import MRCPSPMax from "./IndividualProblemSetPages/MRCPSPMax";
@@ -9,6 +10,13 @@ import RIPMax from "./IndividualProblemSetPages/RIPMax";
 import ProblemSetLandingPage from "./ProblemSetLandingPage";
 
 export default function ProblemSets() {
+  const history = useHistory();
+
+  useEffect(() => {
+    let accessToken = getAccessToken();
+    if (!accessToken) history.push("/login");
+  }, [history]);
+
   return (
     <div className="problemSet-container">
       <BrowserRouter>

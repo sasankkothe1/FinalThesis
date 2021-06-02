@@ -1,9 +1,17 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React, { useEffect } from "react";
+import { NavLink, useHistory } from "react-router-dom";
+import { getAccessToken } from "../../services/login";
 import logo from "../../Assests/logo.png";
 import "./header.css";
 
 export default function Header() {
+  const history = useHistory();
+
+  useEffect(() => {
+    let accessToken = getAccessToken();
+    if (!accessToken) history.push("/login");
+  });
+
   return (
     <header className="header">
       <div className="header-container">

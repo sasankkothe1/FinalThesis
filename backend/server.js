@@ -43,6 +43,7 @@ getTheFileList.route('/rcpsp/:mode').get((req, res) => {
 // sending the file to the frontend for user to download it
 downloadFile.route('/').get((req, res) => {
     let { fileName } = req.query;
+    console.log("entered")
     res.setHeader('Content-disposition', `'attachment; filename=${fileName}`);
     res.download(`${fileStore.LOCATION}/${fileName}`);
 });
