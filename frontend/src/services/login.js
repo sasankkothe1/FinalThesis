@@ -5,10 +5,14 @@ let loginURL = `http://${backend.URL}:${backend.PORT}/login`;
 
 let accessToken = null
 
+// used to route to admin
+let admin = null
+
 export const login = data => {
     return axios.post(loginURL, data, {})
         .then(res => {
             if (res.status === 200) {
+                if (res.data === "/Admin") return "/Admin"
                 setAccessToken(res.data)
                 return res.status;
             }
@@ -16,7 +20,7 @@ export const login = data => {
         }).catch(err => console.log(err));
 }
 
-export const setAccessToken = accessTokenObj => {
+const setAccessToken = accessTokenObj => {
     accessToken = accessTokenObj['accessToken']
 }
 

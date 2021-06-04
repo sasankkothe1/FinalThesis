@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import { getAccessToken } from "../../services/login";
+import AdminView from "../Admin/AdminView";
 
 import "./howTo.css";
 

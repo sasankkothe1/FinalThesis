@@ -8,6 +8,7 @@ from flask_mail import Mail, Message
 
 from pymongo import MongoClient
 from openpyxl import Workbook
+from bson.json_util import dumps
 
 # for creating secret token for the user authentication
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
@@ -49,12 +50,22 @@ def index():
     return app.send_static_file('index.html')
 
 
+@app.route('/getSubmissions', methods=['GET'])
+def getSubmissions():
+    submissionCollection = db['submissions']
+    result = submissionCollection.find()
+    return dumps(list(result))
+
+
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
     password = request.form['password']
 
-    if username != "psplib-secret-username" or password != "psplib-secret-password":
+    if username == "psplib-admin" and password == "psplib-admin-password":
+        return "/Admin", 200
+
+    elif username != "psplib-secret-username" or password != "psplib-secret-password":
         return "wrong username and password", 404
     accessToken = create_access_token(identity=username)
     return jsonify(accessToken=accessToken)

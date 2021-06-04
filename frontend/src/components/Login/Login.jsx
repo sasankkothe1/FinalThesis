@@ -13,7 +13,9 @@ export default function Login() {
     formData.append("username", data.userName);
     formData.append("password", data.password);
     const status = await login(formData);
-    if (status === 200) history.push("/");
+    if (status === "/Admin") history.push("/Admin");
+    else if (status === 200) history.push("/");
+    else history.push("/");
   };
 
   return (
