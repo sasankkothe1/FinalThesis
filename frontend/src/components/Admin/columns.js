@@ -51,12 +51,12 @@ export const COLUMNS = [
         Header: "Stored at",
         accessor: "fileLocation"
     },
-    {
-        Header: "Is Error",
-        accessor: "isError"
-    },
-    {
-        Header: "Error Message",
-        accessor: "error"
-    }
+    // {
+    //     Header: "Is Error",
+    //     accessor: "isError"
+    // },
+    // {
+    //     Header: "Error Message",
+    //     accessor: "error"
+    // }
 ]

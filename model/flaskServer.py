@@ -27,6 +27,7 @@ app.config['MAIL_PASSWORD'] = 'psplib123$'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = True
+app.config['GENERATED_REPORT_FOLDER'] = './'
 
 # adding the secret key for the JWT token
 app.config["JWT_SECRET_KEY"] = "secretsuperpsplibthesissasanktum"
@@ -50,13 +51,6 @@ def index():
     return app.send_static_file('index.html')
 
 
-@app.route('/getSubmissions', methods=['GET'])
-def getSubmissions():
-    submissionCollection = db['submissions']
-    result = submissionCollection.find()
-    return dumps(list(result))
-
-
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
@@ -71,12 +65,109 @@ def login():
     return jsonify(accessToken=accessToken)
 
 
+@app.route('/getSubmissions', methods=['GET'])
+def getSubmissions():
+    submissionCollection = db['submissions']
+    result = submissionCollection.find()
+    return dumps(list(result))
+
+
+@app.route('/getJobOptions')
+def getJobOptions():
+    submissionCollection = db['submissions']
+    jobNumbers = list(submissionCollection.find({}, {"jobs": 1, "_id": 0}))
+    jobNumbersList = []
+
+    for jobNumber in jobNumbers:
+        if {"value": jobNumber["jobs"], "label": jobNumber["jobs"]} not in jobNumbersList:
+            jobNumbersList.append(
+                {"value": jobNumber["jobs"], "label": jobNumber["jobs"]})
+    return dumps(jobNumbersList)
+
+
+@app.route('/getReport', methods=['GET'])
+def getReport():
+    try:
+        jobs = request.args.get('jobs')
+        mode = request.args.get('mode')
+        type = request.args.get('type')
+        print(jobs, mode, type)
+        submissionCollection = db['submissions']
+        if type == "hrs":
+            print("----> in get report if")
+            reportData = submissionCollection.find(
+                {"mode": mode, "jobs": jobs}, {"par": 1, "inst": 1, "ub": 1, "submissionDate": 1, "name": 1, "_id": 0})
+            reportName = generateReport(reportData, type)
+            return send_from_directory(
+                app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
+    except:
+        print("something went wrong")
+    finally:
+        os.remove(reportName)
+
+
+def generateReport(reportData, type):
+
+    if type == "hrs":
+        filename = "report_" + \
+            str(type) + "_" + str(datetime.today().strftime("%d_%m_%Y")) + ".txt"
+        with open(filename, "w") as f:
+            columnHeaders = ['Par', 'inst', 'Makespan', 'Date', 'Author']
+            for header in columnHeaders:
+                f.write(''.join(header.rjust(10)))
+            for el in reportData:
+                f.write('\n')
+                f.write(''.join(str(el['par']).rjust(10)))
+                f.write(''.join(str(el['inst']).rjust(10)))
+                f.write(''.join(str(el['ub']).rjust(10)))
+                f.write(''.join(str(el['submissionDate']).rjust(10)))
+                f.write(''.join(str(el['name']).rjust(10)))
+            f.close()
+            return filename
+
+    # workbook = Workbook()
+    # sheet = workbook.active
+
+    # row = 1
+    # col = 1
+
+    # if type == "hrs":
+    #     columnHeaders = ['Par', 'inst', 'Makespan', 'Date', 'Author']
+    #     for header in columnHeaders:
+    #         sheet.cell(column=col, row=row, value=header)
+    #         col += 1
+    #     for el in reportData:
+    #         col = 1
+    #         row += 1
+    #         sheet.cell(column=col, row=row, value=str(el['par']))
+    #         sheet.cell(column=col + 1, row=row, value=str(el['inst']))
+    #         sheet.cell(column=col + 2, row=row, value=str(el['ub']))
+    #         sheet.cell(column=col + 3, row=row,
+    #                    value=str(el['submissionDate']))
+    #         sheet.cell(column=col + 4, row=row, value=str(el['name']))
+    #     #  filename = "report_" + type + "_" + datetime.today().strftime("%d/%m/%Y")+".xlsx"
+    #     workbook.save(filename="report.xlsx")
+
+    #     msg = Message("Report Generated: report_" + type + "_" + datetime.today().strftime("%d/%m/%Y")+".xlsx", sender="pspliboperationsmanagement@outlook.com",
+    #                   recipients=["pspliboperationsmanagement@outlook.com"])
+    #     msg.body = "You have requested for a report. Please find the attachement for the same"
+
+    #     with app.open_resource("report.xlsx") as fp:
+    #         msg.attach(
+    #             "report.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fp.read())
+    #         mail.send(msg)
+    #         print("--------> mail sent")
+
+        os.remove("report.xlsx")
+
+
 @app.route('/getTheFileList', methods=['GET'])
 def getTheFileList():
     problemType = request.args.get('problemType')
     mode = request.args.get('mode')
     pathToDirectory = ProblemSetsLocation + "/" + problemType + "/" + mode
-    print(pathToDirectory)
+    submissionCollection = db['submissions']
+
     return jsonify(os.listdir(pathToDirectory))
 
 
@@ -86,6 +177,7 @@ def downloadFile():
     mode = request.args.get('mode')
     fileName = request.args.get('fileName')
     pathToDirectory = ProblemSetsLocation + "/" + problemType + "/" + mode
+    print("---------->" + pathToDirectory + "/" + fileName)
     try:
         return send_from_directory(pathToDirectory, fileName, as_attachment=True, attachment_filename=fileName)
     except FileNotFoundError:
@@ -120,7 +212,7 @@ def uploadFile():
             file.save(os.path.join(pathToBeStoredAt, file.filename))
 
     userData = {'name': request.form['name'], 'email': request.form['email'], 'titleOfPaper': request.form['titleOfPaper'],
-                'contributors': request.form['contributors'], 'typeOfInstance': request.form['typeOfInstance']}
+                'contributors': request.form['contributors'], 'typeOfInstance': request.form['typeOfInstance'], 'typeOfSolution': request.form['typeOfSolution']}
 
     processSolution(userData, pathToBeStoredAt + "/")
     return 'upload successful', 200
@@ -132,6 +224,7 @@ def uploadFile():
 def processSolution(userData, solutionFilesPath):
     # extracting individual data from dictionary
     typeOfInstance = userData['typeOfInstance']
+    typeOfSolution = userData['typeOfSolution']
 
     print("typeOfInstance ", typeOfInstance)
 
@@ -178,31 +271,34 @@ def storeSubmission(userData, answer):
     titleOfPaper = userData['titleOfPaper']
     contributors = userData['contributors']
     typeOfInstance = userData['typeOfInstance']
+    typeOfSolution = userData['typeOfSolution']
 
     submissionCollection = db['submissions']
 
     # ('e._goncharov,_v._leonov_16-07-2015_00-05-14_j12011_10.sm', 'j120', '11',
     # '10', '../../fileStore/UploadedSolutions/Sasank_Kothe/15_4_2021/18_41_24/', 180, False, None)
     for el in answer:
-        post = {
-            "name": name,
-            "email": email,
-            "titleOfPaper": titleOfPaper,
-            "contributors": contributors,
-            "typeOfInstance": typeOfInstance,
-            "submissionDate": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "fileName": el[0],
-            "jobs": el[1],
-            "par": el[2],
-            "inst": el[3],
-            "ub": el[5],
-            "lb": 1,
-            "fileLocation": el[4],
-            "isError": el[6],
-            "error": el[7]
-        }
-
-        submissionCollection.insert_one(post)
+        if typeOfSolution == "Upper Bound":
+            post = {
+                "name": name,
+                "email": email,
+                "titleOfPaper": titleOfPaper,
+                "contributors": contributors,
+                "typeOfInstance": typeOfInstance,
+                "typeOfSolution": typeOfSolution,
+                "submissionDate": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "mode": typeOfInstance.split("_")[1],
+                "fileName": el[0],
+                "jobs": el[1],
+                "par": el[2],
+                "inst": el[3],
+                "ub": el[5],
+                "lb": 0,
+                "fileLocation": el[4],
+                "isError": el[6],
+                "error": el[7]
+            }
+            submissionCollection.insert_one(post)
 
 # 'el' is a tuple of (0: instanceFileName, 1: jobNumber, 2: par number, 3: inst number, 4: locationOfTheFileStore, 5: ub, 6: isError, 7: error)
 
@@ -330,8 +426,6 @@ def createReport(reportList):
     for el in reportList:
         row += 1
         for i in range(0, len(el)):
-            if i == 3:
-                print("from report ---> ", el[i])
             sheet.cell(column=col, row=row, value=str(el[i]))
             col += 1
         col = 1

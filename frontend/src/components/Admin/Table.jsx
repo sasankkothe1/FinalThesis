@@ -2,18 +2,10 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useTable, useGlobalFilter } from "react-table";
 import { GlobalFilter } from "./GlobalFilter";
 import { COLUMNS } from "./columns";
-import { getSubmissionsFromServer } from "../../services/admin";
+import { getJobNumbers, getSubmissionsFromServer } from "../../services/admin";
 import "./table.css";
 
-export const Table = () => {
-  const [submissions, setSubmissions] = useState([]);
-
-  useEffect(() => {
-    getSubmissionsFromServer().then((data) => {
-      setSubmissions(data);
-    });
-  }, []);
-
+export const Table = ({ submissions }) => {
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => submissions, [submissions]);
 
