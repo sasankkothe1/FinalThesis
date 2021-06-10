@@ -3,9 +3,14 @@
 //     PORT: "4000",
 // }
 
+// const backend = {
+   //  URL: "localhost",
+   //  PORT: "5000",
+// }
+
 const backend = {
-    URL: "localhost",
-    PORT: "5000",
+	URL: "172.105.251.144",
+	PORT: "5000",
 }
 
 

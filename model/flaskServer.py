@@ -27,6 +27,8 @@ app.config['MAIL_PASSWORD'] = 'psplib123$'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = True
+app.config['MAIL_DEBUG'] = True
+app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['GENERATED_REPORT_FOLDER'] = './'
 
 # adding the secret key for the JWT token
@@ -437,6 +439,7 @@ def createReport(reportList):
 
 def sendEmail(userData):
     # application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    print("in send mail function")
     msg = Message('Report from PSPLIB', sender="pspliboperationsmanagement@outlook.com",
                   recipients=[userData['email']])
     msg.body = "Please find the attachment as the status report of the submission"
