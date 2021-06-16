@@ -2,7 +2,7 @@ import backend from "./backendConfig";
 import axios from "axios";
 
 let getTheFileListURL = `http://${backend.URL}:${backend.PORT}/getTheFileList`
-let downloadFileURL = `http://${backend.URL}:${backend.PORT}/downloadFile`
+let downloadFileURL = "http://localhost:4000/downloadFile"
 
 export const getFiles = typeOfProblem => {
     return axios.get(getTheFileListURL + typeOfProblem).then(({ data }) => {
@@ -12,8 +12,11 @@ export const getFiles = typeOfProblem => {
 }
 
 export const downloadFile = fileParam => {
-    return axios.get(downloadFileURL, { params: fileParam }).then((res) => {
-        console.log("data")
+    console.log(fileParam)
+    //  mode: "sm", fileName: "j60.sm.zip"
+    console.log(fileParam['mode'] + "/" + fileParam['fileName'])
+    return axios.get(downloadFileURL + "/?fileName=" + fileParam['problemType'] + "/" + fileParam['mode'] + "/" + fileParam['fileName']).then((res) => {
+        console.log(res)
         const url = window.URL.createObjectURL(new Blob([res.data]));
         const link = document.createElement('a');
         link.href = url;

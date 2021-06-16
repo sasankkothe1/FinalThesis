@@ -1,5 +1,5 @@
 const fileStore = {
-    LOCATION: "../../fileStore/problemSets",
+    LOCATION: "../../fileStore/problemSets/",
     // PORT: "4000",
 }
 

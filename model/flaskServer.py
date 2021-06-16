@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, json, request, jsonify
+from flask.globals import current_app
 from flask_cors import CORS
 from flask.helpers import send_from_directory,  send_file
 from flask_mail import Mail, Message
@@ -30,6 +31,7 @@ app.config['MAIL_ASCII_ATTACHMENTS'] = True
 app.config['MAIL_DEBUG'] = True
 app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['GENERATED_REPORT_FOLDER'] = './'
+app.config['DOWNLOAD_FOLDER'] = '../../fileStore/problemSets'
 
 # adding the secret key for the JWT token
 app.config["JWT_SECRET_KEY"] = "secretsuperpsplibthesissasanktum"
@@ -178,10 +180,13 @@ def downloadFile():
     problemType = request.args.get('problemType')
     mode = request.args.get('mode')
     fileName = request.args.get('fileName')
-    pathToDirectory = ProblemSetsLocation + "/" + problemType + "/" + mode
+    pathToDirectory = app.config['DOWNLOAD_FOLDER'] + \
+        "/" + problemType + "/" + mode
     print("---------->" + pathToDirectory + "/" + fileName)
+    finalDirectory = os.path.join(current_app.root_path, pathToDirectory)
+    print(finalDirectory)
     try:
-        return send_from_directory(pathToDirectory, fileName, as_attachment=True, attachment_filename=fileName)
+        return send_from_directory(finalDirectory, fileName, as_attachment=True, attachment_filename=fileName)
     except FileNotFoundError:
         print("fileNotFound")
 

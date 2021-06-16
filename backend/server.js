@@ -43,9 +43,9 @@ getTheFileList.route('/rcpsp/:mode').get((req, res) => {
 // sending the file to the frontend for user to download it
 downloadFile.route('/').get((req, res) => {
     let { fileName } = req.query;
-    console.log("entered")
     res.setHeader('Content-disposition', `'attachment; filename=${fileName}`);
     res.download(`${fileStore.LOCATION}/${fileName}`);
+    console.log("file sent")
 });
 
 // upload function that saves the data sent by the user to the backend
