@@ -4,7 +4,7 @@ const cors = require('cors');
 const expressFileUpload = require('express-fileupload');
 const fs = require('fs');
 const axios = require('axios')
-
+const mime = require('mime');
 
 
 // location and the configurations of the fileStore
@@ -14,6 +14,8 @@ const { fileStore } = require('./fileStoreConfig.js');
 const readDir = require('../backend/ReadDirectory/readDirectory.js');
 
 const mailService = require('./mailService');
+const path = require('path');
+
 
 // backend port
 const PORT = 4000;
@@ -40,13 +42,59 @@ getTheFileList.route('/rcpsp/:mode').get((req, res) => {
     res.status(200).json(readDir.readDir(`${fileStore.LOCATION}/rcpsp/${mode}`));
 });
 
-// sending the file to the frontend for user to download it
 downloadFile.route('/').get((req, res) => {
-    let { fileName } = req.query;
-    res.setHeader('Content-disposition', `'attachment; filename=${fileName}`);
-    res.download(`${fileStore.LOCATION}/${fileName}`);
+
+    let { problemType, mode, nameOfTheFile } = req.query;
+    console.log(path.join(__dirname, `../../fileStore/problemSets/${problemType}/${mode}`))
+    var options = {
+        root: path.join(__dirname, `../../fileStore/problemSets/${problemType}/${mode}`)
+    };
+    res.setHeader('Content-disposition', `'attachment; filename=${nameOfTheFile}`);
+    // res.download(`${fileStore.LOCATION}/${mode}/${nameOfTheFile}`);
+    // res.setHeader('Content-disposition', `'attachment; filename=${fileName}`);
+    res.sendFile(nameOfTheFile, options)
     console.log("file sent")
 });
+
+// downloadFile.route('/').get((req, res) => {
+//     try {
+//         let { problemType, mode, nameOfTheFile } = req.query;
+
+//         let file = path.join(__dirname, `../../fileStore/problemSets/${problemType}/${mode}/${nameOfTheFile}`);
+
+//         fs.access(file, fs.constants.F_OK, err => {
+//             console.log(`${file} ${err ? "does not exist" : "exists"}`);
+//         });
+
+//         var fileName = path.basename(file);
+//         var mimeType = mime.lookup(file);
+
+//         fs.readFile(file, function (err, content) {
+//             if (err) {
+//                 res.writeHead(404, { "Content-type": mimeType });
+//                 res.send("<h1>No such file</h1>");
+
+//             } else {
+//                 res.writeHead(200, {
+//                     "Content-type": mimeType,
+//                     'Content-disposition': 'attachment; filename=' + fileName
+//                 });
+//                 res.end(content)
+
+//             }
+//         });
+
+//     } catch (err) {
+//         if (err.kind === 'ObjectId') {
+//             return res.status(404).send({
+//                 message: "Error 404 "
+//             });
+//         }
+//         return res.status(500).send({
+//             message: "Error 500 "
+//         });
+//     }
+// })
 
 // upload function that saves the data sent by the user to the backend
 upload.route('/').post((req, res) => {
