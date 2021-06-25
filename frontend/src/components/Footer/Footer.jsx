@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <div className="footer">
       <div className="footer-container">
-        Powered by chair of operations management
+        Powered by Chair of Operations Management
       </div>
     </div>
   );
