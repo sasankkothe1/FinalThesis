@@ -83,9 +83,9 @@ def getJobOptions():
     jobNumbersList = []
 
     for jobNumber in jobNumbers:
-        if {"value": jobNumber["jobs"], "label": jobNumber["jobs"]} not in jobNumbersList:
+        if {"value": (jobNumber["jobs"]+"").rstrip(), "label": (jobNumber["jobs"]+"").rstrip()} not in jobNumbersList:
             jobNumbersList.append(
-                {"value": jobNumber["jobs"], "label": jobNumber["jobs"]})
+                {"value": (jobNumber["jobs"]+"").rstrip(), "label": (jobNumber["jobs"]+"").rstrip()})
     return dumps(jobNumbersList)
 
 
@@ -104,6 +104,13 @@ def getReport():
             reportName = generateReport(reportData, type)
             return send_from_directory(
                 app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
+        if type == "lb":
+            print("mode = ", mode)
+            reportData = submissionCollection.find(
+                {"mode": mode, "jobs": jobs}, {"par": 1, "inst": 1, "ub": 1, "lb": 1, "name": 1, "_id": 0})
+            reportName = generateReport(reportData, type)
+            return send_from_directory(
+                app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
     except:
         print("something went wrong")
     finally:
@@ -112,60 +119,53 @@ def getReport():
 
 def generateReport(reportData, type):
 
+    # TODO: implement excel in the morning
+
     if type == "hrs":
+        print("in hrs")
         filename = "report_" + \
             str(type) + "_" + str(datetime.today().strftime("%d_%m_%Y")) + ".txt"
         with open(filename, "w") as f:
-            columnHeaders = ['Par', 'inst', 'Makespan', 'Date', 'Author']
+            columnHeaders = ['par', 'inst', 'Makespan', 'Date', 'Author']
             for header in columnHeaders:
-                f.write(''.join(header.rjust(10)))
+                if header == 'par':
+                    f.write(''.join(header.rjust(0)))
+                else:
+                    f.write(''.join(header.rjust(25)))
             for el in reportData:
                 f.write('\n')
-                f.write(''.join(str(el['par']).rjust(10)))
-                f.write(''.join(str(el['inst']).rjust(10)))
-                f.write(''.join(str(el['ub']).rjust(10)))
-                f.write(''.join(str(el['submissionDate']).rjust(10)))
-                f.write(''.join(str(el['name']).rjust(10)))
+                f.write(''.join(str(el['par']).rjust(0)))
+                f.write(''.join(str(el['inst']).rjust(25)))
+                f.write(''.join(str(el['ub']).rjust(25)))
+                f.write(''.join(str(el['submissionDate']).rjust(25)))
+                f.write(''.join(str(el['name']).rjust(25)))
             f.close()
             return filename
-
-    # workbook = Workbook()
-    # sheet = workbook.active
-
-    # row = 1
-    # col = 1
-
-    # if type == "hrs":
-    #     columnHeaders = ['Par', 'inst', 'Makespan', 'Date', 'Author']
-    #     for header in columnHeaders:
-    #         sheet.cell(column=col, row=row, value=header)
-    #         col += 1
-    #     for el in reportData:
-    #         col = 1
-    #         row += 1
-    #         sheet.cell(column=col, row=row, value=str(el['par']))
-    #         sheet.cell(column=col + 1, row=row, value=str(el['inst']))
-    #         sheet.cell(column=col + 2, row=row, value=str(el['ub']))
-    #         sheet.cell(column=col + 3, row=row,
-    #                    value=str(el['submissionDate']))
-    #         sheet.cell(column=col + 4, row=row, value=str(el['name']))
-    #     #  filename = "report_" + type + "_" + datetime.today().strftime("%d/%m/%Y")+".xlsx"
-    #     workbook.save(filename="report.xlsx")
-
-    #     msg = Message("Report Generated: report_" + type + "_" + datetime.today().strftime("%d/%m/%Y")+".xlsx", sender="pspliboperationsmanagement@outlook.com",
-    #                   recipients=["pspliboperationsmanagement@outlook.com"])
-    #     msg.body = "You have requested for a report. Please find the attachement for the same"
-
-    #     with app.open_resource("report.xlsx") as fp:
-    #         msg.attach(
-    #             "report.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fp.read())
-    #         mail.send(msg)
-    #         print("--------> mail sent")
-
-        os.remove("report.xlsx")
+    if type == "lb":
+        filename = "report_" + \
+            str(type) + "_" + str(datetime.today().strftime("%d_%m_%Y")) + ".txt"
+        with open(filename, "w") as f:
+            columnHeaders = ['par', 'inst', 'UB', 'LB', 'opt', 'Author LB']
+            for header in columnHeaders:
+                if header == 'par':
+                    f.write(''.join(header.rjust(0)))
+                else:
+                    f.write(''.join(header.rjust(25)))
+            for el in reportData:
+                f.write('\n')
+                f.write(''.join(str(el['par']).rjust(0)))
+                f.write(''.join(str(el['inst']).rjust(25)))
+                f.write(''.join(str(el['ub']).rjust(25)))
+                f.write(''.join(str(el['lb']).rjust(25)))
+                if ((''.join(str(el['ub']))) == (''.join(str(el['lb'])))):
+                    f.write(''.join('*'.rjust(25)))
+                f.write(''.join(str(el['name']).rjust(25)))
+            f.close()
+            print(filename)
+            return filename
 
 
-@app.route('/getTheFileList', methods=['GET'])
+@ app.route('/getTheFileList', methods=['GET'])
 def getTheFileList():
     problemType = request.args.get('problemType')
     mode = request.args.get('mode')
@@ -175,23 +175,21 @@ def getTheFileList():
     return jsonify(os.listdir(pathToDirectory))
 
 
-@app.route('/downloadFile', methods=['GET'])
+@ app.route('/downloadFile', methods=['GET'])
 def downloadFile():
     problemType = request.args.get('problemType')
     mode = request.args.get('mode')
     fileName = request.args.get('fileName')
     pathToDirectory = app.config['DOWNLOAD_FOLDER'] + \
         "/" + problemType + "/" + mode
-    print("---------->" + pathToDirectory + "/" + fileName)
     finalDirectory = os.path.join(current_app.root_path, pathToDirectory)
-    print(finalDirectory)
     try:
         return send_from_directory(finalDirectory, fileName, as_attachment=True, attachment_filename=fileName)
     except FileNotFoundError:
         print("fileNotFound")
 
 
-@app.route('/upload', methods=['POST'])
+@ app.route('/upload', methods=['POST'])
 def uploadFile():
     fileArray = request.files.getlist('files')
     name = request.form['name']
@@ -209,7 +207,7 @@ def uploadFile():
             emailID = request.form['email']
             msg = Message("Error in the files Uploaded",
                           sender="pspliboperationsmanagement@outlook.com", recipients=[emailID])
-            msg.body = "You have uploaded files with wrong extensions. Please " + \
+            msg.body = "You have uploaded files with wrong extensions. Please check" + \
                 file.filename+" before uploading"
             mail.send(msg)
             return "your files have unsupported format. Please upload only text, pdf, or zip files", 422
@@ -219,7 +217,7 @@ def uploadFile():
             file.save(os.path.join(pathToBeStoredAt, file.filename))
 
     userData = {'name': request.form['name'], 'email': request.form['email'], 'titleOfPaper': request.form['titleOfPaper'],
-                'contributors': request.form['contributors'], 'typeOfInstance': request.form['typeOfInstance'], 'typeOfSolution': request.form['typeOfSolution']}
+                'contributors': request.form['contributors'], 'typeOfInstance': typeOfInstance, 'typeOfSolution': request.form['typeOfSolution']}
 
     processSolution(userData, pathToBeStoredAt + "/")
     return 'upload successful', 200
@@ -233,15 +231,13 @@ def processSolution(userData, solutionFilesPath):
     typeOfInstance = userData['typeOfInstance']
     typeOfSolution = userData['typeOfSolution']
 
-    print("typeOfInstance ", typeOfInstance)
+    print(typeOfInstance, typeOfSolution)
 
-    answer = extractSolutionFiles(solutionFilesPath, typeOfInstance)
+    answer = extractSolutionFiles(
+        solutionFilesPath, typeOfInstance, typeOfSolution)
 
     # store the submission into the MondoDB client collection = submissions
     storeSubmission(userData, answer)
-
-    for el in answer:
-        isSubmissionBest(userData, el)
 
     # to check if every solution is best or not and create report
     reportList = []
@@ -249,23 +245,18 @@ def processSolution(userData, solutionFilesPath):
     for el in answer:
         reportList.append(isSubmissionBest(userData, el))
 
-    # for report in reportList:
-    #     print("------>", report)
-
     # create the report.xlsx
     reportCreated = createReport(reportList)
 
-    # TODO: Remove this comment
     if reportCreated:
         sendEmail(userData)
         reportCreated = False
         reportList = []
 
-    # # convert the answer to json and send the answer
-    # return jsonify(answer)
+    # convert the answer to json and send the answer
+    return jsonify(answer)
 
 
-# TODO: consider including the lower bound
 def storeSubmission(userData, answer):
 
     # username = "psplib-test-user"
@@ -285,41 +276,38 @@ def storeSubmission(userData, answer):
     # ('e._goncharov,_v._leonov_16-07-2015_00-05-14_j12011_10.sm', 'j120', '11',
     # '10', '../../fileStore/UploadedSolutions/Sasank_Kothe/15_4_2021/18_41_24/', 180, False, None)
     for el in answer:
-        if typeOfSolution == "Upper Bound":
-            post = {
-                "name": name,
-                "email": email,
-                "titleOfPaper": titleOfPaper,
-                "contributors": contributors,
-                "typeOfInstance": typeOfInstance,
-                "typeOfSolution": typeOfSolution,
-                "submissionDate": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                "mode": typeOfInstance.split("_")[1],
-                "fileName": el[0],
-                "jobs": el[1],
-                "par": el[2],
-                "inst": el[3],
-                "ub": el[5],
-                "lb": 0,
-                "fileLocation": el[4],
-                "isError": el[6],
-                "error": el[7]
-            }
-            submissionCollection.insert_one(post)
+        post = {
+            "name": name,
+            "email": email,
+            "titleOfPaper": titleOfPaper,
+            "contributors": contributors,
+            "typeOfInstance": typeOfInstance,
+            "typeOfSolution": typeOfSolution,
+            "submissionDate": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "mode": typeOfInstance.split("_")[1],
+            "fileName": str(el[0]).rstrip(),
+            "jobs": str(el[1]).rstrip(),
+            "par": str(el[2]).rstrip(),
+            "inst": str(el[3]).rstrip(),
+            "ub": str(el[5]).rstrip(),
+            "lb": str(el[6]).rstrip(),
+            "fileLocation": str(el[4]).rstrip(),
+            "isError": el[7],
+            "error": el[8]
+        }
+        submissionCollection.insert_one(post)
 
 # 'el' is a tuple of (0: instanceFileName, 1: jobNumber, 2: par number, 3: inst number, 4: locationOfTheFileStore, 5: ub, 6: isError, 7: error)
 
 
 def isSubmissionBest(userData, el):
 
+    typeOfSolution = userData['typeOfSolution']
+
     # get the location where the file is originally stored in "originalFileLocation" variable
     fileName = el[0]
     originalLocationStoredDirectory = el[4]
     originalFileLocation = originalLocationStoredDirectory + fileName
-
-    # store the originalFileobject in "originalFile" variable
-    # print(originalFileLocation)
-    originalFile = open(originalFileLocation)
 
     bestResultsCollection = db['bestresults']
 
@@ -337,71 +325,82 @@ def isSubmissionBest(userData, el):
     if el[6] == False:
         feasible = True
 
-    query = {"jobs": el[1], "par": el[2], "inst": el[3]}
+    query = {"jobs": el[1], "par": el[2], "inst": el[3],
+             "instanceType": userData['typeOfInstance']}
 
     foundResult = bestResultsCollection.find(
         query)   # a mongo cursor is returned
 
     # check if particular solution is present in the bestSolutions table. if not, insert
     if foundResult.count() == 0:
-        if feasible:
+        if typeOfSolution == "Upper Bound":
+            if feasible:
+                post = {
+                    "instanceType": userData['typeOfInstance'],
+                    "jobs": el[1],
+                    "par": el[2],
+                    "inst": el[3],
+                    "ub": el[5],
+                    "lb": el[6],
+                    "AuthorUB": userData['name'],
+                    "AuthorLB": "not available"
+                }
+                bestResultsCollection.insert_one(post)
+            else:
+                return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, 0, 0, 0, 0, ubSwap, lbSwap))
+
+        if typeOfSolution == "Lower Bound":
             post = {
                 "instanceType": userData['typeOfInstance'],
                 "jobs": el[1],
                 "par": el[2],
                 "inst": el[3],
                 "ub": el[5],
-                "lb": 1,
-                "AuthorUB": userData['name'],
+                "lb": el[6],
+                "AuthorUB": "not available",
                 "AuthorLB": userData['name']
             }
             bestResultsCollection.insert_one(post)
-        else:
-            return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, 0, 0, 0, 0, ubSwap, lbSwap))
     # if the solution is already present in the best solution
     else:
         for result in foundResult:
-            docUB = result['ub']
-            userUB = el[5]
+            if (typeOfSolution == "Upper Bound"):
+                # store the originalFileobject in "originalFile" variable
+                # print(originalFileLocation)
+                originalFile = open(originalFileLocation)
 
-            docLB = result['lb']
-            userLB = 0
+                docUB = result['ub']
+                userUB = el[5]
 
-            if userUB < docUB:
-                bestResultsCollection.update(
-                    query, {"$set": {"ub": userUB, "AuthorUB": userData['name']}})
-                ubSwap = True
-                ubDeviationPercentage = ((userUB - docUB) / docUB) * 100
+                if int(userUB) < int(docUB):
+                    bestResultsCollection.update(
+                        query, {"$set": {"ub": userUB, "AuthorUB": userData['name']}})
+                    ubSwap = True
+                    ubDeviationPercentage = ((userUB - docUB) / docUB) * 100
 
-                # store the file in the best files directory --> UB
-                # check if the file is already present and remove it
-                if os.path.exists(ubBestSolutionsLocation + "/" + fileName):
-                    os.remove(ubBestSolutionsLocation + "/" + fileName)
+                    # store the file in the best files directory --> UB
+                    # check if the file is already present and remove it
+                    if os.path.exists(ubBestSolutionsLocation + "/" + fileName):
+                        os.remove(ubBestSolutionsLocation + "/" + fileName)
 
-                # save the best UB file in the hrs folder of the best solution
-                # create new file and copy the contents of the originalFile into the new file
-                with open(ubBestSolutionsLocation + "/" + fileName, 'a') as newBestfile:
-                    for line in originalFile:
-                        newBestfile.write(line)
-                    newBestfile.close()
+                    # save the best UB file in the hrs folder of the best solution
+                    # create new file and copy the contents of the originalFile into the new file
+                    with open(ubBestSolutionsLocation + "/" + fileName, 'a') as newBestfile:
+                        for line in originalFile:
+                            newBestfile.write(line)
+                        newBestfile.close()
 
-            if userLB > docLB:
-                bestResultsCollection.update(
-                    query, {"$set": {"lb": userLB, "AuthorLB": userData['name']}})
+            if (typeOfSolution == "Lower Bound"):
+
+                docLB = result['lb']
+                userLB = el[6]
+
+                if int(userLB) > int(docLB):
+                    bestResultsCollection.update(
+                        query, {"$set": {"lb": userLB, "AuthorLB": userData['name']}})
                 lbSwap = True
-                lbDeviationPercentage = ((userLB - docLB) / docLB) * 100
-
-                # store the file in the best files directory --> UB
-                # check if the file is already present and remove it
-                if os.path.exists(lbBestSolutionsLocation + "/" + fileName):
-                    os.remove(lbBestSolutionsLocation + "/" + fileName)
-
-                # save the best UB file in the hrs folder of the best solution
-                # create new file and copy the contents of the originalFile into the new file
-                with open(lbBestSolutionsLocation + "/" + fileName, 'a') as newBestfile:
-                    for line in originalFile:
-                        newBestfile.write(line)
-                    newBestfile.close()
+                lbDeviationPercentage = (
+                    (int(userLB) - int(docLB)) / int(docLB)) * 100
 
         return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, docLB, docUB, lbDeviationPercentage, ubDeviationPercentage, ubSwap, lbSwap))
 
@@ -423,7 +422,7 @@ def createReport(reportList):
     row = 2
     col = 1
     columnHeaders = ['Instance', 'Problem Type', 'Feasible', 'Objective Function',
-                     'CP-based LB', 'Best Known UB', 'Deviation from LB', 'Deviation from UB', 'Improved UB']
+                     'CP-based LB', 'Best Known UB', 'Deviation from LB', 'Deviation from UB', 'Improved UB', 'Improved LB']
 
     for header in columnHeaders:
         sheet.cell(column=col, row=row, value=header)
@@ -444,7 +443,6 @@ def createReport(reportList):
 
 def sendEmail(userData):
     # application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-    print("in send mail function")
     msg = Message('Report from PSPLIB', sender="pspliboperationsmanagement@outlook.com",
                   recipients=[userData['email']])
     msg.body = "Please find the attachment as the status report of the submission"

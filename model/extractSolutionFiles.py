@@ -3,16 +3,12 @@ import zipfile
 import shutil
 
 from checkSolution import checkSolution
-
-# open every solution file, reads the header and creates the problem instance name
-# return the path specific problem instance for the specific solution submitted by the user
+from extractLowerBounds import extractLowerBounds
 
 problemInstanceDirPath = "../../fileStore/extractedProblemInstances/"
 
 # /Users/sasank/Desktop/Thesis/Project/psplib/model/../../fileStore/extractedProblemInstances/rcpsp/j12016_5.sm
 
-
-# returns tuple (solutionFileName, instanceFile and solutionFile)
 
 # recursively extract files, p: is path
 extractedFilePaths = []
@@ -52,11 +48,12 @@ def getProblemInstance(solutionFilePath, typeOfInstance):
         os.mkdir(tempDirpath)
 
         # unzip and extract all the files to the tempDir
-        zipfile.ZipFile(solutionFilePath, 'r').extractall(tempDirpath)     
+        zipfile.ZipFile(solutionFilePath, 'r').extractall(tempDirpath)
 
         # recursively travel the unzipped folder by using above method: extractFiles
         # extract files to the solutionFolder also. For this, strip the characters after last "/" to go one folder up
-        tempParentFolderPath = solutionFilePath.replace(solutionFilePath.split('/')[-1], "")
+        tempParentFolderPath = solutionFilePath.replace(
+            solutionFilePath.split('/')[-1], "")
         extractFiles(tempDirpath, tempParentFolderPath)
 
         # access the paths of the files from extractedFilePaths[] list and read the headers
@@ -99,42 +96,52 @@ def getProblemInstance(solutionFilePath, typeOfInstance):
 
 
 # extract all the solutions from the path where the solutions of the user are stored.
-def extractSolutionFiles(solutionFilesPath, typeOfInstance):
-    solutionTupleList = []
-    extractedProblemInstancesPaths = []
-    for solution in os.listdir(solutionFilesPath):
-        solutionFilePath = solutionFilesPath + solution
-        problemInstancePath = getProblemInstance(
-            solutionFilePath, typeOfInstance)
-        if isinstance(problemInstancePath, list):
-            extractedProblemInstancesPaths += problemInstancePath
-        else:
-            extractedProblemInstancesPaths.append(problemInstancePath)
-    for el in extractedProblemInstancesPaths:
-        # solutionFileName el[0]
-        fileName = el[0]
-        # number of jobs (inst_set) el[1]
-        inst_set = el[1]
-        # instance parameter (inst_param) el[2]
-        inst_param = el[2]
-        # instance number (inst_num) el[3]
-        inst_num = el[3]
-        # instance file is present at the 1st position of the tuple
-        instanceFile = el[4]
-        # solution file is present at the 2nd position of the tuple
-        solutionFile = el[5]
-        solutionStatus = checkSolution(
-            instanceFile, solutionFile, typeOfInstance)
+def extractSolutionFiles(solutionFilesPath, typeOfInstance, typeOfSolution):
+    if typeOfSolution == "Upper Bound":
+        solutionTupleList = []
+        extractedProblemInstancesPaths = []
+        for solution in os.listdir(solutionFilesPath):
+            solutionFilePath = solutionFilesPath + solution
+            problemInstancePath = getProblemInstance(
+                solutionFilePath, typeOfInstance)
+            if isinstance(problemInstancePath, list):
+                extractedProblemInstancesPaths += problemInstancePath
+            else:
+                extractedProblemInstancesPaths.append(problemInstancePath)
+        for el in extractedProblemInstancesPaths:
+            # solutionFileName el[0]
+            fileName = el[0]
+            # number of jobs (inst_set) el[1]
+            inst_set = el[1]
+            # instance parameter (inst_param) el[2]
+            inst_param = el[2]
+            # instance number (inst_num) el[3]
+            inst_num = el[3]
+            # instance file is present at the 1st position of the tuple
+            instanceFile = el[4]
+            # solution file is present at the 2nd position of the tuple
+            solutionFile = el[5]
+            solutionStatus = checkSolution(
+                instanceFile, solutionFile, typeOfInstance)
 
-        # now add the solution status tuple to the respective el:tuple
-        solutionTupleList.append(
-            (fileName, inst_set, inst_param, inst_num, solutionFilesPath) + solutionStatus)
+            # now add the solution status tuple to the respective el:tuple
+            solutionTupleList.append(
+                (fileName, inst_set, inst_param, inst_num, solutionFilesPath) + solutionStatus)
 
-    # remove the temporary directory before returning
-    if os.path.exists(os.getcwd() + "/temp"):
-        shutil.rmtree(os.getcwd() + "/temp")
-    if os.path.exists(os.getcwd() + "__pycache__"):
-        shutil.rmtree(os.getcwd() + "__pycache__")
+        # remove the temporary directory before returning
+        if os.path.exists(os.getcwd() + "/temp"):
+            shutil.rmtree(os.getcwd() + "/temp")
+        if os.path.exists(os.getcwd() + "__pycache__"):
+            shutil.rmtree(os.getcwd() + "__pycache__")
 
-    # return the final solutionTupleList => (fileName, inst_set, inst_param, inst_num, solutionFilesPath, instanceFile, SolutionFile, makespan, isError, error)
-    return solutionTupleList
+        # return the final solutionTupleList => (fileName, inst_set, inst_param, inst_num, solutionFilesPath, makespan, lb, isError, error)
+        return solutionTupleList
+
+    if typeOfSolution == "Lower Bound":
+        answer = processLowerBound(solutionFilesPath, typeOfInstance)
+        return answer
+
+
+def processLowerBound(solutionFilesPath, typeOfInstance):
+    for file in os.listdir(solutionFilesPath):
+        return extractLowerBounds(solutionFilesPath + file)

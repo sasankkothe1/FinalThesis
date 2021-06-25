@@ -16,6 +16,7 @@ Jinja2==2.11.3
 MarkupSafe==2.0.0
 openpyxl==3.0.7
 passlib==1.7.4
+pathlib2==2.3.5
 pendulum==2.1.2
 py-buzz==1.0.3
 PyJWT==2.1.0

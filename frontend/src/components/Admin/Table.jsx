@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useTable, useGlobalFilter } from "react-table";
 import { GlobalFilter } from "./GlobalFilter";
 import { COLUMNS } from "./columns";
-import { getJobNumbers, getSubmissionsFromServer } from "../../services/admin";
 import "./table.css";
 
 export const Table = ({ submissions }) => {

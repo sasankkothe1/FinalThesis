@@ -303,4 +303,6 @@ def checkRCPSP(problemInstancePath, solutionFilePath, mode):
     p.readProject(problemInstancePath)
     p.read_solution(solutionFilePath)
     p.test_solution(mode)
-    return (p.claimed_makespan, p.isError, p.error)
+
+    # tuple -> (makespan, lb, if any error, error)
+    return (p.claimed_makespan, "not submitted", p.isError, p.error)
