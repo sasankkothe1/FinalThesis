@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
 import { getAccessToken } from "../../services/login";
 import FRCPSP from "./IndividualProblemSetPages/FRCPSP";
 import MRCPSP from "./IndividualProblemSetPages/MRCPSP";
-import MRCPSPMax from "./IndividualProblemSetPages/MRCPSPMax";
 import RCPSP from "./IndividualProblemSetPages/RCPSP";
 import RCPSPMax from "./IndividualProblemSetPages/RCPSPMax";
 import RIPMax from "./IndividualProblemSetPages/RIPMax";
@@ -29,7 +28,6 @@ export default function ProblemSets() {
           <Route exact path={"/ProblemSets/rcpsp"} component={RCPSP} />
           <Route exact path={"/ProblemSets/rcpspmax"} component={RCPSPMax} />
           <Route exact path={"/ProblemSets/mrcpsp"} component={MRCPSP} />
-          <Route exact path={"/ProblemSets/mrcpspmax"} component={MRCPSPMax} />
           <Route exact path={"/ProblemSets/ripmax"} component={RIPMax} />
           <Route exact path={"/ProblemSets/frcpsp"} component={FRCPSP} />
         </Switch>

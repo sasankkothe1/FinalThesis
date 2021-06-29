@@ -1,5 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faExternalLinkAlt, faCoffee } from "@fortawesome/free-solid-svg-icons";
 
 export default function ProblemSetLandingPage() {
   return (
@@ -23,10 +25,20 @@ export default function ProblemSetLandingPage() {
           </NavLink>
         </li>
         <li>
-          <NavLink className="problem-link" exact to={"/ProblemSets/mrcpspmax"}>
+          <a
+            target="_blank"
+            className="problem-link"
+            href="https://www.wiwi.tu-clausthal.de/en/ueber-uns/abteilungen/operations-management-group/research-and-knowledge-transfer/research-areas/project-generator-progen/max-and-psp/max-library"
+            rel="noreferrer"
+          >
             Multi-Mode Resource Constrained Project scheduling Problem with
             minimal and maximal time lags (MRCPSP/Max)
-          </NavLink>
+          </a>
+          &nbsp;
+          <FontAwesomeIcon
+            className="new-window-icon"
+            icon={faExternalLinkAlt}
+          />
         </li>
         <li>
           <NavLink className="problem-link" exact to={"/ProblemSets/ripmax"}>

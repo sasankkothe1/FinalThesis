@@ -12,3 +12,7 @@ html * {
   flex-grow: 1;
   margin: 60px;
 }
+
+.new-window-icon {
+  color: #007bff;
+}

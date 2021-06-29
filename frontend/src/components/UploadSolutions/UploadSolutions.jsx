@@ -8,13 +8,12 @@ import "./uploadSoluitons.css";
 import { getAccessToken } from "../../services/login";
 
 export default function UploadSolutions() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit } = useForm();
 
+  const [nameError, setNameError] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [titleOfPaperError, setTitleOfPaperError] = useState(false);
+  const [solutionListError, setSolutionListError] = useState(false);
   let history = useHistory();
 
   useEffect(() => {
@@ -23,20 +22,24 @@ export default function UploadSolutions() {
   });
 
   const checkformValidity = (data) => {
-    if (data.name === undefined) {
-      return false;
-    } else if (
+    if (data.name === "") setNameError(true);
+    else setNameError(false);
+    if (
       data.email === undefined ||
       !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
         data.email
       )
-    ) {
+    )
       setEmailError(true);
-      return false;
-    } else {
-      return true;
-    }
+    else setEmailError(false);
+    if (data.solutions.length === 0) setSolutionListError(true);
+    else setSolutionListError(false);
+    if (data.typeOfSolution === "Lower Bound") {
+      if (data.titleOfPaper === "") setTitleOfPaperError(true);
+      else setTitleOfPaperError(false);
+    } else setTitleOfPaperError(false);
   };
+
   const onSubmit = (data) => {
     const isFormValid = checkformValidity(data);
     if (isFormValid) {
@@ -52,7 +55,7 @@ export default function UploadSolutions() {
       formData.append("typeOfInstance", data.typeOfInstance);
       formData.append("typeOfSolution", data.typeOfSolution);
       upload(formData);
-    } else console.log("form not valid");
+    }
   };
 
   return (
@@ -73,11 +76,11 @@ export default function UploadSolutions() {
               <Form.Group controlId="firstname">
                 <Form.Text className="text-muted flags">[Mandatory]</Form.Text>
                 <Form.Control
-                  {...register("name", { required: true })}
+                  {...register("name")}
                   type="text"
                   placeholder="First Name, Last Name"
                 />
-                {errors?.name?.type === "required" && (
+                {nameError && (
                   <Form.Text className="text-muted flags error-msgs">
                     Please fill the name
                   </Form.Text>
@@ -90,7 +93,6 @@ export default function UploadSolutions() {
                 <Form.Text className="text-muted flags">[Mandatory]</Form.Text>
                 <Form.Control
                   {...register("email", {
-                    required: true,
                     pattern:
                       !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
                   })}
@@ -117,6 +119,12 @@ export default function UploadSolutions() {
                   type="text"
                   placeholder="Title of the paper (optional)"
                 />
+                {titleOfPaperError && (
+                  <Form.Text className="text-muted flags error-msgs">
+                    Title of the research paper should be mentioned is you are
+                    submitting Lower Bound solution.
+                  </Form.Text>
+                )}
               </Form.Group>
             </Col>
           </Row>
@@ -174,6 +182,11 @@ export default function UploadSolutions() {
                   placeholder="Drag and drop/browse from the computer and upload *.txt files, zip files"
                   multiple
                 />
+                {solutionListError && (
+                  <Form.Text className="text-muted flags error-msgs">
+                    You can not submit empty solutions
+                  </Form.Text>
+                )}
               </Form.Group>
             </Col>
           </Row>

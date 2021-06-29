@@ -11,35 +11,45 @@ export default function About() {
     if (!accessToken) history.push("/login");
   });
 
+  //TODO: Implement the research papers links
+
   return (
     <div className="about-container">
       <h4>PROJECT SCHEDULING PROBLEM LIBRARY - PSPLIB</h4>
-      <h5>What is it?</h5>
+      <h5>What is PSPLIB?</h5>
       <p className="about-paragraph">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vitae
-        molestie ligula. Nunc sed libero rutrum, porta magna eu, malesuada diam.
-        Integer nunc justo, tempus non ultricies at, porttitor ut lectus. Ut
-        pharetra lorem vel urna bibendum, nec pulvinar purus porttitor. Fusce eu
-        turpis in eros tincidunt convallis vitae eu mi. Curabitur in nulla id
-        mauris interdum gravida. Vestibulum ante ipsum primis in faucibus orci
-        luctus et ultrices posuere cubilia curae; Cras sit amet justo at nulla
-        sollicitudin scelerisque quis vel ex. Phasellus viverra lorem purus, et
-        viverra urna pulvinar sed. Nullam consequat dolor sed mi rhoncus, vitae
-        viverra libero egestas.
+        PSPLIB is also called as Project Scheduling Problem Library. It is a
+        collection of different project scheduling problems. This is developed
+        by Chair of Operations Management of Technical University of Munich in
+        an attempt to provide an online service to check the solutions of the
+        researchers for a specific problem. Any researcher can donwload the
+        project scheduling problems and upload their solutions to the sytem.
+        Later user receives a mail with the report that mentions the status
+        about the uploaded solutions.{" "}
       </p>
-      <h5>How important is Project scheduling problem</h5>
+      <h5>Types of problems provided in the website</h5>
+      <ul>
+        <li className="type-of-problem-list-item">
+          Single Mode Resource-Constrained Project Scheduling Problem
+        </li>
+        <li className="type-of-problem-list-item">
+          Single Mode Resource-Constrained Project Scheduling Problem with
+          minimal and maximal time lags
+        </li>
+        <li className="type-of-problem-list-item">
+          Mulit-Mode Resource-Constrained Project Scheduling Problem
+        </li>
+        <li className="type-of-problem-list-item">
+          Mulit-Mode Resource-Constrained Project Scheduling Problem with
+          minimal and maximal time lags
+        </li>
+        <li className="type-of-problem-list-item">
+          Resource Investment Problem with minimal and maximal time lags
+        </li>
+      </ul>
       <p className="about-paragraph">
-        Nunc ut porttitor nulla. Vestibulum ante ipsum primis in faucibus orci
-        luctus et ultrices posuere cubilia curae; Curabitur ultricies sapien
-        lectus, ac consequat tortor vestibulum eget. Mauris viverra, felis vitae
-        efficitur volutpat, justo justo pellentesque ante, at vestibulum sem
-        urna tincidunt erat. Nam imperdiet, ligula eu fermentum gravida, magna
-        nisi sodales mauris, nec viverra purus leo non ipsum. Maecenas euismod
-        enim dapibus, tempus ipsum quis, pellentesque tortor. Sed id ullamcorper
-        libero, a blandit velit. Phasellus leo ipsum, interdum in viverra
-        bibendum, placerat id magna. Donec non sapien mi. Pellentesque in
-        viverra nisi. Proin finibus fermentum mattis. Fusce iaculis massa non
-        auctor blandit.
+        User can download the above problem sets by navigating to the "Problem
+        Sets" option from above.
       </p>
       <h5>Relavant research papers</h5>
       <ul>

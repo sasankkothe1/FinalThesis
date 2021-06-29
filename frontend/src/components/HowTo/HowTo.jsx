@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import { getAccessToken } from "../../services/login";
-import AdminView from "../Admin/AdminView";
+import sample from "../../Assests/sampleSolution_mm_j30.txt";
 
 import "./howTo.css";
 
@@ -86,7 +86,7 @@ export default function HowTo() {
                     </li>
                     <li>
                       Please make sure solution file format is according to this{" "}
-                      <a href="./sampleSolution_mm_j30.txt" download>
+                      <a href={sample} download="sample.txt">
                         format(mm_j30)
                       </a>
                       . Other wise, the system will reject the files
