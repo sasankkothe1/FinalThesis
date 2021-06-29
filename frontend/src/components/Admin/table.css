@@ -33,3 +33,26 @@ table th {
   background-color: #c4c4c4;
   color: #3070b3;
 }
+
+.pagination-container {
+  float: right;
+  padding-top: 10px;
+}
+
+.pagination-button {
+  padding: 5px 10px 5px 10px;
+  margin-left: 2px;
+  border: none;
+  border-radius: 20px;
+  background: #62a7ef;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.pagination-button:disabled {
+  background-color: #c4c4c4;
+}
+
+.pagination-select {
+}
