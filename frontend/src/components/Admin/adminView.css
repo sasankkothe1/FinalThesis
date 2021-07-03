@@ -9,3 +9,14 @@
 .downloadModalSubmitButton-container {
   text-align: center;
 }
+
+.adminview-buttons {
+  display: flex;
+  justify-content: space-evenly;
+  padding-top: 25%;
+}
+
+.adminview-button {
+  height: 10em;
+  width: 10em;
+}

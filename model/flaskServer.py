@@ -76,6 +76,13 @@ def getSubmissions():
     return dumps(list(result))
 
 
+@app.route('/getBestResults', methods=['GET'])
+def getBestResults():
+    bestResultsCollection = db['bestresults']
+    result = bestResultsCollection.find()
+    return dumps(list(result))
+
+
 @app.route('/getJobOptions')
 def getJobOptions():
     submissionCollection = db['submissions']

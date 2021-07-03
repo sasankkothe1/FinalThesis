@@ -1,18 +1,17 @@
 import React, { useMemo } from "react";
 import { useTable, useGlobalFilter, usePagination } from "react-table";
 import { GlobalFilter } from "./GlobalFilter";
-import { COLUMNS } from "./columns";
 import "./table.css";
 
-export const Table = ({ submissions }) => {
-  const columns = useMemo(() => COLUMNS, []);
+export const Table = ({ submissions, columnNames }) => {
+  const columns = useMemo(() => columnNames, [columnNames]);
   const data = useMemo(() => submissions, [submissions]);
 
   const tableInstance = useTable(
     {
       columns,
       data,
-      initialState: { pageIndex: 2 },
+      initialState: { pageIndex: 0 },
     },
     useGlobalFilter,
     usePagination

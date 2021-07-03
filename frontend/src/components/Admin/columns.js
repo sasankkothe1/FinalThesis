@@ -1,4 +1,4 @@
-export const COLUMNS = [
+export const SUBMISSION_COLUMNS = [
     {
         Header: "Submitted by",
         accessor: "name"
@@ -58,5 +58,44 @@ export const COLUMNS = [
     // {
     //     Header: "Error Message",
     //     accessor: "error"
+    // }
+]
+
+export const BESTRESULTS_COLUMNS = [
+    {
+        Header: "Type of Instance",
+        accessor: "instanceType"
+    },
+    {
+        Header: "Number of Jobs",
+        accessor: "jobs"
+    },
+    {
+        Header: "Parameter",
+        accessor: "par"
+    },
+    {
+        Header: "Instance",
+        accessor: "inst"
+    },
+    {
+        Header: "Upper Bound",
+        accessor: "ub"
+    },
+    {
+        Header: "Lower Bound",
+        accessor: "lb"
+    },
+    {
+        Header: "UB Submitted by",
+        accessor: "AuthorUB"
+    },
+    {
+        Header: "LB Submitted by",
+        accessor: "AuthorLB"
+    },
+    // {
+    //     Header: "Stored at",
+    //     accessor: "fileLocation"
     // }
 ]

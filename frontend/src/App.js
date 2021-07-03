@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import './App.css';
 import About from './components/About/About';
+import Admin from './components/Admin/Admin';
 import AdminView from './components/Admin/AdminView';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
@@ -21,7 +22,8 @@ function App() {
             <Route exact path={"/ProblemSets"} component={ProblemSets} />
             <Route exact path={"/HowTo"} component={HowTo} />
             <Route path={"/UploadSolutions"} component={UploadSolutions} />
-            <Route path={"/Admin"} component={AdminView} />
+            {/* <Route path={"/Admin"} component={AdminView} /> */}
+            <Route path={"/Admin"} component={Admin} />
           </Switch>
         </div>
         <Footer />

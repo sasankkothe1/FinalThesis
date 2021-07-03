@@ -2,12 +2,20 @@ import backend from "./backendConfig";
 import axios from "axios";
 
 let getSubmissionsURL = `http://${backend.URL}:${backend.PORT}/getSubmissions`
+let getBestSubmissionsURL = `http://${backend.URL}:${backend.PORT}/getBestResults`
 let getJobOptionsURL = `http://${backend.URL}:${backend.PORT}/getJobOptions`
 let getReportURL = `http://${backend.URL}:${backend.PORT}/getReport`
 
 
 export const getSubmissionsFromServer = () => {
     return axios.get(getSubmissionsURL).then(({ data }) => {
+        return data;
+    })
+        .catch(err => console.log(err));
+}
+
+export const getBestResultsFromServer = () => {
+    return axios.get(getBestSubmissionsURL).then(({ data }) => {
         return data;
     })
         .catch(err => console.log(err));
