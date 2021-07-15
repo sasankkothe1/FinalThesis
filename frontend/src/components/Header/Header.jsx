@@ -3,6 +3,7 @@ import { NavLink, useHistory } from "react-router-dom";
 import { getAccessToken } from "../../services/login";
 import logo from "../../Assests/logo.png";
 import "./header.css";
+import DownloadReportModal from "../DownloadReportModal";
 
 export default function Header() {
   const history = useHistory();
@@ -45,6 +46,12 @@ export default function Header() {
           >
             How to
           </NavLink>
+          <DownloadReportModal
+            type="summaryFiles"
+            className="header-download-report"
+            displayTitle="Download Summary Files"
+            modalHeader="Download Summary Files"
+          />
           <NavLink
             exact
             className="upload-solution"

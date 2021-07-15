@@ -41,8 +41,9 @@ export default function UploadSolutions() {
   };
 
   const onSubmit = (data) => {
-    const isFormValid = checkformValidity(data);
-    if (isFormValid) {
+    checkformValidity(data);
+    if (!nameError && !emailError && !titleOfPaperError && !solutionListError) {
+      console.log(data);
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("email", data.email);

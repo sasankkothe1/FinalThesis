@@ -5,9 +5,6 @@ let loginURL = `http://${backend.URL}:${backend.PORT}/login`;
 
 let accessToken = null
 
-// used to route to admin
-let admin = null
-
 export const login = data => {
     return axios.post(loginURL, data, {})
         .then(res => {

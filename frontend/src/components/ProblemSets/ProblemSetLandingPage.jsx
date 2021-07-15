@@ -10,14 +10,23 @@ export default function ProblemSetLandingPage() {
       <ol>
         <li>
           <NavLink className="problem-link" exact to={"/ProblemSets/rcpsp"}>
-            Resource-Constrained Project Scheduling Problem (RCPSP)
+            Single Mode Resource-Constrained Project Scheduling Problem (RCPSP)
           </NavLink>
         </li>
         <li>
-          <NavLink className="problem-link" exact to={"/ProblemSets/rcpspmax"}>
-            Resource-Constrained Project Scheduling Problem with minimal and
-            maximal time lags(RCPSP/Max)
-          </NavLink>
+          <a
+            target="_blank"
+            className="problem-link"
+            href="https://www.wiwi.tu-clausthal.de/en/ueber-uns/abteilungen/betriebswirtschaftslehre-insbesondere-produktion-und-logistik/research/research-areas/project-generator-progen/max-and-psp/max-library/single-mode-project-duration-problem-rcpsp/max"
+            rel="noreferrer"
+          >
+            Single mode project duration problem RCPSP/max
+          </a>
+          &nbsp;
+          <FontAwesomeIcon
+            className="new-window-icon"
+            icon={faExternalLinkAlt}
+          />
         </li>
         <li>
           <NavLink className="problem-link" exact to={"/ProblemSets/mrcpsp"}>
@@ -31,8 +40,7 @@ export default function ProblemSetLandingPage() {
             href="https://www.wiwi.tu-clausthal.de/en/ueber-uns/abteilungen/operations-management-group/research-and-knowledge-transfer/research-areas/project-generator-progen/max-and-psp/max-library"
             rel="noreferrer"
           >
-            Multi-Mode Resource Constrained Project scheduling Problem with
-            minimal and maximal time lags (MRCPSP/Max)
+            Multi mode project duration problem MRCPSP/max
           </a>
           &nbsp;
           <FontAwesomeIcon
@@ -41,10 +49,34 @@ export default function ProblemSetLandingPage() {
           />
         </li>
         <li>
-          <NavLink className="problem-link" exact to={"/ProblemSets/ripmax"}>
-            Resource Investment Problem with minimal and maximal time lags
-            (RIP/max)
-          </NavLink>
+          <a
+            target="_blank"
+            className="problem-link"
+            href="https://www.wiwi.tu-clausthal.de/en/ueber-uns/abteilungen/betriebswirtschaftslehre-insbesondere-produktion-und-logistik/research/research-areas/project-generator-progen/max-and-psp/max-library/single-mode-resource-investment-problem-rip/max"
+            rel="noreferrer"
+          >
+            Single mode resource investment problem RIP/max
+          </a>
+          &nbsp;
+          <FontAwesomeIcon
+            className="new-window-icon"
+            icon={faExternalLinkAlt}
+          />
+        </li>
+        <li>
+          <a
+            target="_blank"
+            className="problem-link"
+            href="https://www.wiwi.tu-clausthal.de/en/ueber-uns/abteilungen/betriebswirtschaftslehre-insbesondere-produktion-und-logistik/research/research-areas/project-generator-progen/max-and-psp/max-library/single-mode-resource-levelling-problem-rlp/max"
+            rel="noreferrer"
+          >
+            Single mode resource levelling problem RLP/max
+          </a>
+          &nbsp;
+          <FontAwesomeIcon
+            className="new-window-icon"
+            icon={faExternalLinkAlt}
+          />
         </li>
         <li>
           <NavLink className="problem-link" exact to={"/ProblemSets/frcpsp"}>

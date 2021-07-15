@@ -1,8 +1,9 @@
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import 'react-date-range/dist/styles.css'; // main style file
+import 'react-date-range/dist/theme/default.css'; // theme css file
 import './App.css';
 import About from './components/About/About';
 import Admin from './components/Admin/Admin';
-import AdminView from './components/Admin/AdminView';
 import Footer from './components/Footer/Footer';
 import Header from './components/Header/Header';
 import HowTo from './components/HowTo/HowTo';

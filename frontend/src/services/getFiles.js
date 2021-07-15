@@ -13,39 +13,6 @@ export const getFiles = typeOfProblem => {
         .catch(err => console.log(err));
 }
 
-// export const downloadFile = fileParam => {
-//     return axios.get(downloadFileURL + "/?problemType=" + fileParam['problemType'] + "&mode=" + fileParam['mode'] + "&nameOfTheFile=" + fileParam['fileName']).then((res) => {
-//         console.log(res)
-//         const url = window.URL.createObjectURL(new Blob([res.data]));
-//         const link = document.createElement('a');
-//         link.href = url;
-//         link.setAttribute('download', fileParam['fileName']);
-//         link.setAttribute('type', res.headers['content-type'])
-//         document.body.appendChild(link);
-//         link.click();
-//     })
-// }
-
-// the below method is used to download from node backend
-
-// export const downloadFile = fileParam => {
-//     return new Promise((resolve, reject) => {
-//         axios.get(downloadFileURL + "/?problemType=" + fileParam['problemType'] + "&mode=" + fileParam['mode'] + "&nameOfTheFile=" + fileParam['fileName'], {
-//             method: 'GET',
-//             responseType: 'blob'
-//         }).then(res => {
-//             const url = window.URL.createObjectURL(new Blob([res.data]));
-//             const link = document.createElement('a');
-//             link.href = url;
-//             link.setAttribute('download', fileParam['fileName']);
-//             document.body.appendChild(link);
-//             link.click();
-//         }).catch(err => {
-//             console.log(err);
-//         });
-//     })
-// }
-
 export const downloadFile = fileParam => {
     return new Promise((resolve, reject) => {
         axios.get(downloadFileURL, {

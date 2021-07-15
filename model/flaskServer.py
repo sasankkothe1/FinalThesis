@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import date, datetime
 from flask import Flask, json, request, jsonify
 from flask.globals import current_app
 from flask_cors import CORS
@@ -102,74 +102,87 @@ def getReport():
         jobs = request.args.get('jobs')
         mode = request.args.get('mode')
         type = request.args.get('type')
-        print(jobs, mode, type)
+        reportType = request.args.get('reportType')
+        startDate = request.args.get('startDate')
+        endDate = request.args.get('endDate')
         submissionCollection = db['submissions']
-        if type == "hrs":
-            print("----> in get report if")
-            reportData = submissionCollection.find(
-                {"mode": mode, "jobs": jobs}, {"par": 1, "inst": 1, "ub": 1, "submissionDate": 1, "name": 1, "_id": 0})
-            reportName = generateReport(reportData, type)
-            return send_from_directory(
-                app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
-        if type == "lb":
-            print("mode = ", mode)
-            reportData = submissionCollection.find(
-                {"mode": mode, "jobs": jobs}, {"par": 1, "inst": 1, "ub": 1, "lb": 1, "name": 1, "_id": 0})
-            reportName = generateReport(reportData, type)
-            return send_from_directory(
-                app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
-    except:
-        print("something went wrong")
+        bestResultsCollection = db['bestresults']
+
+        if reportType == "reportFiles":
+            if startDate and endDate:
+                startDateArray = startDate.split("-")
+                endDateArray = endDate.split("-")
+                fromDate = datetime(day=int(startDateArray[0]), month=int(
+                    startDateArray[1]), year=int(startDateArray[2]))
+                toDate = datetime(day=int(endDateArray[0]), month=int(
+                    endDateArray[1]), year=int(endDateArray[2]))
+                reportData = submissionCollection.find({"mode": mode, "jobs": jobs, "submissionDate": {
+                                                       "$gte": fromDate, "$lte": toDate}}, {"_id": 0})
+                reportName = generateReport(reportData, type, reportType)
+                return send_from_directory(app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
+            else:
+                reportData = submissionCollection.find(
+                    {"mode": mode, "jobs": jobs}, {"_id": 0})
+                reportName = generateReport(reportData, type, reportType)
+                return send_from_directory(app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
+        if reportType == "summaryFiles":
+            reportData = bestResultsCollection.find(
+                {"mode": mode, "jobs": jobs}, {"_id": 0})
+            reportName = generateReport(reportData, type, reportType)
+            return send_from_directory(app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
+
+    except Exception as e:
+        print(e)
     finally:
-        os.remove(reportName)
+        if reportName:
+            os.remove(reportName)
 
 
-def generateReport(reportData, type):
-
+def generateReport(reportData, type, reportType):
     # TODO: implement excel in the morning
+    filename = "report_" + \
+        str(type) + "_" + str(datetime.today().strftime("%d_%m_%Y")) + ".xlsx"
 
-    if type == "hrs":
-        print("in hrs")
-        filename = "report_" + \
-            str(type) + "_" + str(datetime.today().strftime("%d_%m_%Y")) + ".txt"
-        with open(filename, "w") as f:
-            columnHeaders = ['par', 'inst', 'Makespan', 'Date', 'Author']
-            for header in columnHeaders:
-                if header == 'par':
-                    f.write(''.join(header.rjust(0)))
-                else:
-                    f.write(''.join(header.rjust(25)))
-            for el in reportData:
-                f.write('\n')
-                f.write(''.join(str(el['par']).rjust(0)))
-                f.write(''.join(str(el['inst']).rjust(25)))
-                f.write(''.join(str(el['ub']).rjust(25)))
-                f.write(''.join(str(el['submissionDate']).rjust(25)))
-                f.write(''.join(str(el['name']).rjust(25)))
-            f.close()
-            return filename
-    if type == "lb":
-        filename = "report_" + \
-            str(type) + "_" + str(datetime.today().strftime("%d_%m_%Y")) + ".txt"
-        with open(filename, "w") as f:
-            columnHeaders = ['par', 'inst', 'UB', 'LB', 'opt', 'Author LB']
-            for header in columnHeaders:
-                if header == 'par':
-                    f.write(''.join(header.rjust(0)))
-                else:
-                    f.write(''.join(header.rjust(25)))
-            for el in reportData:
-                f.write('\n')
-                f.write(''.join(str(el['par']).rjust(0)))
-                f.write(''.join(str(el['inst']).rjust(25)))
-                f.write(''.join(str(el['ub']).rjust(25)))
-                f.write(''.join(str(el['lb']).rjust(25)))
-                if ((''.join(str(el['ub']))) == (''.join(str(el['lb'])))):
-                    f.write(''.join('*'.rjust(25)))
-                f.write(''.join(str(el['name']).rjust(25)))
-            f.close()
-            print(filename)
-            return filename
+    if type == 'hrs':
+        if reportType == "reportFiles":
+            columnHeaders = ['Par', 'Inst', 'Makespan',
+                             'Submitted At', 'Submitted By']
+            keys = ['par', 'inst', 'ub', 'submissionDate', 'name']
+        if reportType == "summaryFiles":
+            columnHeaders = ['Par', 'Inst', 'Best UB',
+                             'Submitted By', 'Submitted At']
+            keys = ['par', 'inst', 'ub', 'AuthorUB', 'submissionDateUB']
+    if type == 'lb':
+        if reportType == "reportFiles":
+            columnHeaders = ['Par', 'Inst', 'Lower Bound',
+                             'Submitted At', 'Submitted By']
+            keys = ['par', 'inst', 'lb', 'submissionDate', 'name']
+        if reportType == "summaryFiles":
+            columnHeaders = ['Par', 'Inst', 'Best Lower Bound',
+                             'Submitted By', 'Submitted At']
+            keys = ['par', 'inst', 'lb', 'AuthorLB', 'submissionDateLB']
+
+    return excelSheetGenerator(reportData, columnHeaders, keys, filename)
+
+
+def excelSheetGenerator(reportData, columnHeaders, keys, filename):
+    workbook = Workbook()
+    sheet = workbook.active
+    row = 1
+    col = 1
+    for header in columnHeaders:
+        sheet.cell(row=row, column=col, value=header)
+        col += 1
+    col = 1
+    for el in reportData:
+        row += 1
+        for key in keys:
+            sheet.cell(row, col, value=el[key])
+            col += 1
+        col = 1
+
+    workbook.save(filename)
+    return filename
 
 
 @ app.route('/getTheFileList', methods=['GET'])
@@ -238,8 +251,6 @@ def processSolution(userData, solutionFilesPath):
     typeOfInstance = userData['typeOfInstance']
     typeOfSolution = userData['typeOfSolution']
 
-    print(typeOfInstance, typeOfSolution)
-
     answer = extractSolutionFiles(
         solutionFilesPath, typeOfInstance, typeOfSolution)
 
@@ -290,7 +301,7 @@ def storeSubmission(userData, answer):
             "contributors": contributors,
             "typeOfInstance": typeOfInstance,
             "typeOfSolution": typeOfSolution,
-            "submissionDate": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "submissionDate": datetime.now(),
             "mode": typeOfInstance.split("_")[1],
             "fileName": str(el[0]).rstrip(),
             "jobs": str(el[1]).rstrip(),
@@ -310,6 +321,7 @@ def storeSubmission(userData, answer):
 def isSubmissionBest(userData, el):
 
     typeOfSolution = userData['typeOfSolution']
+    typeOfInstance = userData['typeOfInstance']
 
     # get the location where the file is originally stored in "originalFileLocation" variable
     fileName = el[0]
@@ -325,15 +337,16 @@ def isSubmissionBest(userData, el):
     docUB = 0
     docLB = 0
     objectiveFunc = el[5]
+    submittedLB = el[6]
     feasible = False
 
     instance = el[1]+el[2]+"_"+el[3]
 
-    if el[6] == False:
+    if el[7] == False:
         feasible = True
 
     query = {"jobs": el[1], "par": el[2], "inst": el[3],
-             "instanceType": userData['typeOfInstance']}
+             "instanceType": typeOfInstance}
 
     foundResult = bestResultsCollection.find(
         query)   # a mongo cursor is returned
@@ -341,33 +354,44 @@ def isSubmissionBest(userData, el):
     # check if particular solution is present in the bestSolutions table. if not, insert
     if foundResult.count() == 0:
         if typeOfSolution == "Upper Bound":
+
             if feasible:
                 post = {
-                    "instanceType": userData['typeOfInstance'],
+                    "instanceType": typeOfInstance,
+                    "mode": typeOfInstance.split("_")[1],
                     "jobs": el[1],
                     "par": el[2],
                     "inst": el[3],
                     "ub": el[5],
                     "lb": el[6],
+                    "submissionDateUB": datetime.now(),
+                    "submissionDateLB": "not available",
                     "AuthorUB": userData['name'],
                     "AuthorLB": "not available"
                 }
                 bestResultsCollection.insert_one(post)
+
+                # TODO: ask the deviationUB in the below line (3rd element from right)
+                return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, 0, objectiveFunc, 0, 0, True, False))
             else:
                 return ((instance, userData['typeOfInstance'], feasible, objectiveFunc, 0, 0, 0, 0, ubSwap, lbSwap))
 
         if typeOfSolution == "Lower Bound":
             post = {
                 "instanceType": userData['typeOfInstance'],
+                "mode": typeOfInstance.split("_")[1],
                 "jobs": el[1],
                 "par": el[2],
                 "inst": el[3],
                 "ub": el[5],
                 "lb": el[6],
+                "submissionDateUB": "not available",
+                "submissionDateLB": datetime.now(),
                 "AuthorUB": "not available",
                 "AuthorLB": userData['name']
             }
             bestResultsCollection.insert_one(post)
+            return ((instance, userData['typeOfInstance'], feasible, 0, submittedLB, 0, 0, 0, True, False))
     # if the solution is already present in the best solution
     else:
         for result in foundResult:
@@ -381,9 +405,10 @@ def isSubmissionBest(userData, el):
 
                 if int(userUB) < int(docUB):
                     bestResultsCollection.update(
-                        query, {"$set": {"ub": userUB, "AuthorUB": userData['name']}})
+                        query, {"$set": {"ub": userUB, "AuthorUB": userData['name'], "submissionDateUB": datetime.now()}})
                     ubSwap = True
-                    ubDeviationPercentage = ((userUB - docUB) / docUB) * 100
+                    ubDeviationPercentage = (
+                        (int(userUB) - int(docUB)) / int(docUB)) * 100
 
                     # store the file in the best files directory --> UB
                     # check if the file is already present and remove it
@@ -404,7 +429,7 @@ def isSubmissionBest(userData, el):
 
                 if int(userLB) > int(docLB):
                     bestResultsCollection.update(
-                        query, {"$set": {"lb": userLB, "AuthorLB": userData['name']}})
+                        query, {"$set": {"lb": userLB, "AuthorLB": userData['name'], "submissionDateLB": datetime.now()}})
                 lbSwap = True
                 lbDeviationPercentage = (
                     (int(userLB) - int(docLB)) / int(docLB)) * 100
