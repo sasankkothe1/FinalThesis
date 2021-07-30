@@ -22,6 +22,13 @@ export default function SubmissionTable() {
   useEffect(() => {
     getSubmissionsFromServer().then((data) => {
       setSubmissions(data);
+      data.map((el, i) => {
+        el["submissionDate"] = moment(el["submissionDate"]["$date"]).format(
+          "MMMM Do YYYY, h:mm:ss a"
+        );
+        // 2021-07-19 16:40:45.063846
+        setTableData((oldTableData) => [...oldTableData, el]);
+      });
       setTableData(data);
     });
   }, []);
@@ -36,7 +43,10 @@ export default function SubmissionTable() {
     start.setDate(start.getDate() + 2);
     end.setDate(end.getDate() + 2);
     const filteredSubmissions = submissions.filter((submission) => {
-      const submissionDate = moment(submission["submissionDate"], "DD/MM/YYYY");
+      const submissionDate = moment(
+        submission["submissionDate"],
+        "MMMM Do YYYY, h:mm:ss a"
+      );
       return submissionDate >= start && submissionDate <= end;
     });
 
