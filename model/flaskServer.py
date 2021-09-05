@@ -21,7 +21,7 @@ app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # mail configs
-app.config['MAIL_SERVER'] = 'smtp-mail.outlook.com'
+app.config['MAIL_SERVER'] = 'outlook.office365.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = 'pspliboperationsmanagement@outlook.com'
 app.config['MAIL_PASSWORD'] = 'psplib123$'
@@ -39,9 +39,15 @@ jwt = JWTManager(app)
 
 mail = Mail(app)
 
-client = MongoClient(
-    "mongodb+srv://testpsplib:testpsplib@cluster0.trtwg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-db = client['psplibtest']
+# client = MongoClient(
+#     "mongodb+srv://testpsplib:testpsplib@cluster0.trtwg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+# client = MongoClient(
+#     "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false")
+
+client = MongoClient("mongodb://localhost:27017/")
+print(client)
+db = client['psplib2']
+print(db)
 
 ProblemSetsLocation = "../../fileStore/problemSets"
 uploadedFilesLocation = "../../fileStore/UploadedSolutions"
