@@ -47,6 +47,11 @@ backend/CaptchaKeys.js
 frontend/src/components/UploadSolutions/CaptchaKeys.js
 frontend/backend/CaptchaKeys.js
 
+#generated folders in model folder when hosted in the server
+model/lib
+model/lib64
+model/share
+model/bin
 
 #pycache
 psplib/model/__pycache__

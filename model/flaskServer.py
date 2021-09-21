@@ -45,7 +45,6 @@ mail = Mail(app)
 #     "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false")
 
 client = MongoClient("mongodb://localhost:27017/")
-print(client)
 db = client['psplib2']
 print(db)
 
@@ -138,10 +137,9 @@ def getReport():
             return send_from_directory(app.config['GENERATED_REPORT_FOLDER'], filename=reportName, as_attachment=True)
 
     except Exception as e:
-        print(e)
+        print("exception is ", e)
     finally:
-        if reportName:
-            os.remove(reportName)
+        os.remove(reportName)
 
 
 def generateReport(reportData, type, reportType):
