@@ -45,6 +45,7 @@ def getProblemInstance(solutionFilePath, typeOfInstance):
 
         # create a "temp" directory to extract all the zip files
         tempDirpath = os.getcwd() + "/temp"
+
         os.mkdir(tempDirpath)
 
         # unzip and extract all the files to the tempDir
@@ -54,12 +55,14 @@ def getProblemInstance(solutionFilePath, typeOfInstance):
         # extract files to the solutionFolder also. For this, strip the characters after last "/" to go one folder up
         tempParentFolderPath = solutionFilePath.replace(
             solutionFilePath.split('/')[-1], "")
+
         extractFiles(tempDirpath, tempParentFolderPath)
 
         # access the paths of the files from extractedFilePaths[] list and read the headers
 
         for file in extractedFilePaths:
             fileName = file.split('/')[-1]
+
             with open(file) as temp:
                 temp = list(temp)[:4]
                 temp = [_.replace(" ", "").split(":")[-1].rstrip("\n")
@@ -97,6 +100,8 @@ def getProblemInstance(solutionFilePath, typeOfInstance):
 
 # extract all the solutions from the path where the solutions of the user are stored.
 def extractSolutionFiles(solutionFilesPath, typeOfInstance, typeOfSolution):
+    global extractedFilePaths
+    extractedFilePaths = []
     if typeOfSolution == "Upper Bound":
         solutionTupleList = []
         extractedProblemInstancesPaths = []

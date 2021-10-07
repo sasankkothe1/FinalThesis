@@ -143,7 +143,7 @@ def getReport():
 
 
 def generateReport(reportData, type, reportType):
-    # TODO: implement excel in the morning
+
     filename = "report_" + \
         str(type) + "_" + str(datetime.today().strftime("%d_%m_%Y")) + ".xlsx"
 

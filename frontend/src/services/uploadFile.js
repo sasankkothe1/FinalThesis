@@ -9,8 +9,9 @@ export const upload = data => {
             console.log(res);
             if (res.status === 200) {
                 console.log(res.status);
+                alert("The files are uploaded successfully. Please check your email for the report");
                 return res.status;
             }
             else return false;
-        }).catch(err => console.log(err));
+        }).catch(err => alert(err));
 }
