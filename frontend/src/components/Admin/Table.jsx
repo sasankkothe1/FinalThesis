@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useTable, useGlobalFilter, usePagination } from "react-table";
 import { GlobalFilter } from "./GlobalFilter";
+import { downloadSolutionFile } from "../../services/getFiles";
 import "./table.css";
 
 export const Table = ({ submissions, columnNames }) => {
@@ -36,6 +37,11 @@ export const Table = ({ submissions, columnNames }) => {
 
   const { globalFilter, pageIndex, pageSize } = state;
 
+  const downloadSolution = (e, fileLocation, fileName) => {
+    e.preventDefault();
+    downloadSolutionFile(fileLocation, fileName);
+  };
+
   return (
     <div>
       {submissions !== null ? (
@@ -60,11 +66,28 @@ export const Table = ({ submissions, columnNames }) => {
                   return (
                     <tr {...row.getRowProps()}>
                       {row.cells.map((cell) => {
-                        return (
-                          <td {...cell.getCellProps()}>
-                            {cell.render("Cell")}
-                          </td>
-                        );
+                        if (cell.column.Header === "Stored at") {
+                          let fileLocation = cell.value;
+                          let fileName = cell.row.cells[6].value;
+                          return (
+                            <td {...cell.getCellProps()}>
+                              <a
+                                href="/"
+                                onClick={(e) =>
+                                  downloadSolution(e, fileLocation, fileName)
+                                }
+                              >
+                                {cell.render("Cell")}
+                              </a>
+                            </td>
+                          );
+                        } else {
+                          return (
+                            <td {...cell.getCellProps()}>
+                              {cell.render("Cell")}
+                            </td>
+                          );
+                        }
                       })}
                     </tr>
                   );

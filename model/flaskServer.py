@@ -213,6 +213,17 @@ def downloadFile():
         print("fileNotFound")
 
 
+@ app.route('/downloadSolutionFile', methods=['GET'])
+def downloadSolutionFile():
+    filePath = request.args.get('filePath')
+    fileName = request.args.get("fileName")
+    filePathFinal = os.path.join(current_app.root_path, filePath)
+    try:
+        return send_from_directory(filePathFinal, fileName, as_attachment=True, attachment_filename=fileName)
+    except FileNotFoundError:
+        print("fileNotFound")
+
+
 @ app.route('/upload', methods=['POST'])
 def uploadFile():
     fileArray = request.files.getlist('files')

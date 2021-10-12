@@ -3,6 +3,7 @@ import axios from "axios";
 
 let getTheFileListURL = `http://${backend.URL}:${backend.PORT}/getTheFileList`
 let downloadFileURL = `http://${backend.URL}:${backend.PORT}/downloadFile`
+let downloadSolutionFileURL = `http://${backend.URL}:${backend.PORT}/downloadSolutionFile`
 
 // let downloadFileURL = "http://localhost:4000/downloadFile"
 
@@ -29,5 +30,26 @@ export const downloadFile = fileParam => {
         }).catch(err => {
             console.log(err);
         });
+    })
+}
+
+export const downloadSolutionFile = (filePath, fileName) => {
+    return new Promise((resolve, reject) => {
+        axios.get(downloadSolutionFileURL, {
+            params: { filePath, fileName },
+            method: "GET",
+            responseType: "blob"
+        }).then(res => {
+            console.log(res.data)
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+        }).catch(err => {
+            console.log(err);
+        });
+
     })
 }
