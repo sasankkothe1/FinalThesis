@@ -45,7 +45,7 @@ npm install
 ```
 npm start
 ```
-- Enter the URL `localhost:3000` in the browser.
+- Navigate to [localhost](http://localhost:3000/) in the browser.
 
 To navigate through the functionlaity, backend (in this case, it is model) should be started.
 
